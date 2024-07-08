@@ -12,7 +12,7 @@ namespace UniTrade.Controllers
     [ApiController]
     public class TestDemoController : ControllerBase
     {
-        // GET: /test/
+        // GET: /test
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TestDemoModel>>> GetAdministrator()
         {
