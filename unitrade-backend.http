@@ -1,0 +1,6 @@
+@unitrade_backend_HostAddress = http://localhost:5258
+
+GET {{unitrade_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
