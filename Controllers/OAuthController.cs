@@ -17,20 +17,10 @@ namespace UniTrade.Controllers
     [ApiController]
     public class OAuthController : ControllerBase
     {
-        /*private readonly SqlSugarClient _db;
-
-        public OAuthController(SqlSugarClient db)
-        {
-            _db = db;
-        }*/
-
-        //
-
         //登录
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-
             SqlSugarClient db = Database.GetInstance();
             try
             {
@@ -43,7 +33,6 @@ namespace UniTrade.Controllers
                 var adminstrator = db.Queryable<ADMINISTRATORS>()
                     .Where(a=>a.ADMIN_NAME == request.name && a.ADMIN_PASSWORD == request.password)
                     .First();
-
                 if(adminstrator != null)
                 {
                     var token = GenerateJwtToken(adminstrator.ADMIN_ID, "Admin");
@@ -51,10 +40,7 @@ namespace UniTrade.Controllers
                 }
                 else if(customer != null || seller != null)
                 {
-                    //var user_name = customer.CUSTOMER_NAME != null ? customer.CUSTOMER_NAME : seller.SELLER_NAME;
-                    //string user_name = customer?.CUSTOMER_NAME ?? seller.SELLER_NAME;
                     string user_id = customer?.CUSTOMER_ID ?? seller.SELLER_ID;
-
                     var token = GenerateJwtToken(user_id, "User");
                     return Ok(token);
                 }
