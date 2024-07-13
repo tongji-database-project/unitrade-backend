@@ -1,39 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using UniTrade.Tools;
-using UniTrade.Models;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using SqlSugar;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System;
-using System.Runtime.CompilerServices;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using UniTrade.Models;
+using UniTrade.Tools;
 
 namespace UniTrade.Controllers
 {
-    [Route("oauth")]
+    [Route("adminlogin")]
     [ApiController]
-    public class OAuthController : ControllerBase
+    public class AdminLoginController : ControllerBase
     {
-        //登录
-        [HttpPost("login")]
+        [HttpPost]
         public IActionResult Login([FromBody] LoginRequest request)
         {
             SqlSugarClient db = Database.GetInstance();
             try
             {
-                var customer = db.Queryable<CUSTOMERS>()
-                    .Where(c => c.CUSTOMER_NAME == request.name && c.CUSTOMER_PASSWORD == request.password)
+                var adminstrator = db.Queryable<ADMINISTRATORS>()
+                    .Where(a => a.ADMIN_NAME == request.name && a.ADMIN_PASSWORD == request.password)
                     .First();
-                var seller = db.Queryable<SELLERS>()
-                    .Where(s => s.SELLER_NAME == request.name && s.SELLER_PASSWORD == request.password)
-                    .First();
-                if(customer != null || seller != null)
+                if (adminstrator != null)
                 {
-                    string user_id = customer?.CUSTOMER_ID ?? seller.SELLER_ID;
-                    var token = GenerateJwtToken(user_id, "User");
+                    var token = GenerateJwtToken(adminstrator.ADMIN_ID, "Admin");
                     return Ok(token);
                 }
                 else
@@ -45,21 +38,15 @@ namespace UniTrade.Controllers
             }
         }
 
-
-        //注册
-        //[HttpPost("register")]
-        ////.........
-
-
-        private string GenerateJwtToken(string id,string role)
+        private string GenerateJwtToken(string id, string role)
         {
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var claims = new List<Claim>
             {
-           
-                new Claim(ClaimTypes.Name, id),  
+
+                new Claim(ClaimTypes.Name, id),
                 new Claim(ClaimTypes.Role, role)
             };
 
@@ -70,19 +57,9 @@ namespace UniTrade.Controllers
               TokenParameter.Audience,
               claims,
               expires: DateTime.Now.AddMinutes(TokenParameter.TokenExpiry),
-              signingCredentials: credentials);   
+              signingCredentials: credentials);
 
             return tokenHandler.WriteToken(token);
         }
-
-    }
-
-    public class LoginRequest
-    {
-        public string name { get; set; }
-        public string password { get; set; }
     }
 }
-
-
-
