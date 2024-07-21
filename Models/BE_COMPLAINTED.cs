@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///用于存放被投诉商家与投诉申请的关系
     ///</summary>
     public partial class BE_COMPLAINTED
     {

@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///用于存放投诉申请的具体内容，包含投诉理由等
     ///</summary>
     public partial class COMPLAINTS
     {

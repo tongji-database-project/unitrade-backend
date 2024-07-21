@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于存放指派管理员处理投诉申请的详情信息
     ///</summary>
     public partial class AUDIT_COMPLAINT
     {

@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于存放买家与他发起的投诉
     ///</summary>
     public partial class COMMIT_COMPLAINT
     {

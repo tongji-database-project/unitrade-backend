@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///商品表，用于存放商品主要信息，商品详情信息存放在其他表中
     ///</summary>
     public partial class MERCHANDISES
     {
@@ -39,13 +39,6 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public byte[] PICTURE {get;set;}
-
-           /// <summary>
-           /// Desc:
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
            public long INVENTORY {get;set;}
 
            /// <summary>
@@ -54,6 +47,13 @@ namespace UniTrade.Models
            /// Nullable:True
            /// </summary>           
            public string MERCHANDISE_TYPE {get;set;}
+
+           /// <summary>
+           /// Desc:
+           /// Default:
+           /// Nullable:False
+           /// </summary>           
+           public string PICTURE_PATH {get;set;}
 
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///申诉表，用于存放商家发起的申诉的详情与状态
     ///</summary>
     public partial class APPEALS
     {

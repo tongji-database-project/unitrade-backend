@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///用于存放买家卖家间的沟通信息
     ///</summary>
     public partial class COMMUNICATION
     {
@@ -18,14 +18,14 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string SELLER_ID {get;set;}
+           public string SENDER_ID {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string CUSTOMER_ID {get;set;}
+           public string RECEIVER_ID {get;set;}
 
            /// <summary>
            /// Desc:
@@ -40,13 +40,6 @@ namespace UniTrade.Models
            /// Nullable:False
            /// </summary>           
            public string COMMUNICATION_CONTENT {get;set;}
-
-           /// <summary>
-           /// Desc:通过一个字符标识该信息谁发出的，s表示卖家，c表示买家
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string SENDER {get;set;}
 
     }
 }

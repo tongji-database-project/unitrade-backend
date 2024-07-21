@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于存放订单与评论的关系
     ///</summary>
     public partial class COMMENT_ON
     {

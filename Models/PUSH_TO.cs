@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于存放应该向用户推荐的商品的信息
     ///</summary>
     public partial class PUSH_TO
     {

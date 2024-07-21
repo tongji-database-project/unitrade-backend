@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///用于存放退款申请详情
     ///</summary>
     public partial class REFUNDS
     {

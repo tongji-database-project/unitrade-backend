@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，购物车表，存放用户购物车中的商品信息
     ///</summary>
     public partial class CARTS
     {

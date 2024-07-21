@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///物流信息表，用于存放各类物流信息，内容仅为临时性的，订单完成后删除对应项
     ///</summary>
     public partial class LOGISTICS
     {

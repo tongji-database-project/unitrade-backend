@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace UniTrade
 {
@@ -37,6 +38,10 @@ namespace UniTrade
                             Description = "try to use swagger build api doc",
                             Version = "v1"
                         });
+                // 指定 XML 注释文件的位置（需要先在项目属性中开启文档生成）
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
             });
         }
 

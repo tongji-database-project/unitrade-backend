@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于存放买家关注卖家的信息
     ///</summary>
     public partial class FOLLOWS
     {

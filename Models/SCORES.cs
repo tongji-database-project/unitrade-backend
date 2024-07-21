@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///评分表，用于存放某一评论给出的评分
     ///</summary>
     public partial class SCORES
     {

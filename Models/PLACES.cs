@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于记录买家发起的订单
     ///</summary>
     public partial class PLACES
     {

@@ -5,11 +5,11 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///原卖家表，已废弃
+    ///用户表，有买权限和卖权限
     ///</summary>
-    public partial class SELLERS
+    public partial class USERS
     {
-           public SELLERS(){
+           public USERS(){
 
 
            }
@@ -18,56 +18,63 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string SELLER_ID {get;set;}
+           public string USER_ID {get;set;}
+
+           /// <summary>
+           /// Desc:用户头像，存储图片路径
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string AVATAR {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string SELLER_NAME {get;set;}
+           public string NAME {get;set;}
 
            /// <summary>
-           /// Desc:使用SHA256加密存储
+           /// Desc:加密存储
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string SELLER_PASSWORD {get;set;}
+           public string PASSWORD {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string SELLER_PHONE {get;set;}
+           public string PHONE {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string SELLER_ADDRESS {get;set;}
+           public string ADDRESS {get;set;}
 
            /// <summary>
-           /// Desc:
+           /// Desc:信誉值
            /// Default:
            /// Nullable:False
            /// </summary>           
            public short REPUTATION {get;set;}
 
            /// <summary>
-           /// Desc:通过审核的卖家才可以上架商品
+           /// Desc:银行卡号
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string AUDIT_STATUS {get;set;}
+           public string CREDIT_NUMBER {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public decimal CREDIT_NUMBER {get;set;}
+           public string SEX {get;set;}
 
     }
 }
