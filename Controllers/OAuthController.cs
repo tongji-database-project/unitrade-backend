@@ -17,6 +17,8 @@ namespace UniTrade.Controllers
     [ApiController]
     public class OAuthController : ControllerBase
     {
+        // TODO: token 刷新，参考 https://www.cnblogs.com/l-monstar/p/17337768.html
+
         //登录
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
@@ -33,7 +35,7 @@ namespace UniTrade.Controllers
                 if(customer != null || seller != null)
                 {
                     string user_id = customer?.CUSTOMER_ID ?? seller.SELLER_ID;
-                    var token = GenerateJwtToken(user_id, "User");
+                    var token = JwtService.GenerateAccessToken(user_id, "User");
                     return Ok(token);
                 }
                 else
@@ -49,32 +51,6 @@ namespace UniTrade.Controllers
         //注册
         //[HttpPost("register")]
         ////.........
-
-
-        private string GenerateJwtToken(string id,string role)
-        {
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var claims = new List<Claim>
-            {
-           
-                new Claim(ClaimTypes.Name, id),  
-                new Claim(ClaimTypes.Role, role)
-            };
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenParameter.SecretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claimsIdentity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-            var token = new JwtSecurityToken(TokenParameter.Issuer,
-              TokenParameter.Audience,
-              claims,
-              expires: DateTime.Now.AddMinutes(TokenParameter.TokenExpiry),
-              signingCredentials: credentials);   
-
-            return tokenHandler.WriteToken(token);
-        }
-
     }
 
     public class LoginRequest

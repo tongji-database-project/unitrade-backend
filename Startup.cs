@@ -1,5 +1,9 @@
 ﻿using Microsoft.OpenApi.Models;
+using System.Text;
 using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using UniTrade.Tools;
 
 namespace UniTrade
 {
@@ -24,8 +28,41 @@ namespace UniTrade
                             .AllowAnyOrigin()
                             .AllowAnyMethod();
                         }));
+
+            // 添加身份认证配置
+            services.AddAuthentication(options =>
+                    {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    })
+            .AddJwtBearer(options =>
+                    {
+                    var secrectByte = Encoding.UTF8.GetBytes(TokenParameter.SecretKey);
+
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                    // 验证 token 颁发者
+                    ValidateIssuer = true,
+                    ValidIssuer = TokenParameter.Issuer,
+
+                    // 验证接收者
+                    ValidateAudience = true,
+                    ValidAudience = TokenParameter.Audience,
+
+                    // 对签名的 SecurityToken 的 SecurityKey 进行验证
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(secrectByte),
+
+                    // 验证失效时间
+                    ValidateLifetime = true,
+                    };
+                    });
+
             // 添加控制器
             services.AddControllers();
+
             // 添加 swagger 配置
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddSwaggerGen(options =>
@@ -63,7 +100,9 @@ namespace UniTrade
 
             app.UseRouting();
 
+            // 配置用户认证中间件
             app.UseAuthorization();
+            app.UseAuthentication();
 
             // 允许跨域
             app.UseCors();
