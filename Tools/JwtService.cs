@@ -20,7 +20,7 @@ namespace UniTrade.Tools
             {
 
                 new Claim(ClaimTypes.Name, id),
-                    new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Role, role)
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenParameter.SecretKey));

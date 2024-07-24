@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using UniTrade.Models;
 using UniTrade.Tools;
+using UniTrade.ViewModels;
 
 namespace UniTrade.Controllers
 {
@@ -16,7 +17,7 @@ namespace UniTrade.Controllers
     public class AdminLoginController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public IActionResult Login([FromBody] LoginInfoViewModel request)
         {
             SqlSugarClient db = Database.GetInstance();
             try
@@ -26,7 +27,7 @@ namespace UniTrade.Controllers
                     .First();
                 if (adminstrator != null)
                 {
-                    var token = GenerateJwtToken(adminstrator.ADMIN_ID, "Admin");
+                    var token = JwtService.GenerateAccessToken(adminstrator.ADMIN_ID, "Admin");
                     return Ok(token);
                 }
                 else
@@ -34,32 +35,8 @@ namespace UniTrade.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(566, $"Internal server error: {ex.Message}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
-        }
-
-        private string GenerateJwtToken(string id, string role)
-        {
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var claims = new List<Claim>
-            {
-
-                new Claim(ClaimTypes.Name, id),
-                new Claim(ClaimTypes.Role, role)
-            };
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenParameter.SecretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claimsIdentity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-            var token = new JwtSecurityToken(TokenParameter.Issuer,
-              TokenParameter.Audience,
-              claims,
-              expires: DateTime.Now.AddMinutes(TokenParameter.TokenExpiry),
-              signingCredentials: credentials);
-
-            return tokenHandler.WriteToken(token);
         }
     }
 }

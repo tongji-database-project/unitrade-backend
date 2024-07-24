@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace UniTrade.Models
 {
@@ -39,6 +40,7 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:False
            /// </summary>           
+           [JsonIgnore]
            public string PASSWORD {get;set;}
 
            /// <summary>

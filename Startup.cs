@@ -30,11 +30,12 @@ namespace UniTrade
                         }));
 
             // 添加身份认证配置
-            services.AddAuthentication(options =>
-                    {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    })
+            // services.AddAuthentication(options =>
+            //         {
+            //         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //         })
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
                     {
                     var secrectByte = Encoding.UTF8.GetBytes(TokenParameter.SecretKey);
@@ -100,9 +101,10 @@ namespace UniTrade
 
             app.UseRouting();
 
-            // 配置用户认证中间件
-            app.UseAuthorization();
+            // 配置身份认证与授权中间件
+            // 身份认证中间件需要在所有需要身份认证的中间件前调用（如授权中间件）
             app.UseAuthentication();
+            app.UseAuthorization();
 
             // 允许跨域
             app.UseCors();
