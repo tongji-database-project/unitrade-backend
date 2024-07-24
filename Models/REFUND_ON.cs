@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于记录退款申请对应的订单信息
     ///</summary>
     public partial class REFUND_ON
     {

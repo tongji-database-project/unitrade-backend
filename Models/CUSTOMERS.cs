@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///原买家表，已废弃
     ///</summary>
     public partial class CUSTOMERS
     {

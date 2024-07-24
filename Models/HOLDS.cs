@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于存放卖家成交订单的情况
     ///</summary>
     public partial class HOLDS
     {

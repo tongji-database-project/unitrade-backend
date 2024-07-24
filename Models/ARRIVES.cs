@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///关系集
+    ///关系集，用于关联订单与物流信息
     ///</summary>
     public partial class ARRIVES
     {

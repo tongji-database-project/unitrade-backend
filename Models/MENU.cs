@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///一个意义不明的表，待确认作用
     ///</summary>
     public partial class MENU
     {

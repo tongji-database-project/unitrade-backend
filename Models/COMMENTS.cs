@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///评论表，用于存放商品下的相关评论
     ///</summary>
     public partial class COMMENTS
     {

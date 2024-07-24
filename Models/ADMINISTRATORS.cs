@@ -5,7 +5,7 @@ using System.Text;
 namespace UniTrade.Models
 {
     ///<summary>
-    ///
+    ///管理员表，与普通用户分开处理
     ///</summary>
     public partial class ADMINISTRATORS
     {
