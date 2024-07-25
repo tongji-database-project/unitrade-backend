@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 using SqlSugar;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,6 +17,8 @@ namespace UniTrade.Controllers
     [ApiController]
     public class AdminLoginController : ControllerBase
     {
+        IPasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
+
         [HttpPost]
         public IActionResult Login([FromBody] LoginInfoViewModel request)
         {
@@ -23,15 +26,27 @@ namespace UniTrade.Controllers
             try
             {
                 var adminstrator = db.Queryable<ADMINISTRATORS>()
-                    .Where(a => a.ADMIN_NAME == request.name && a.ADMIN_PASSWORD == request.password)
+                    .Where(a => a.ADMIN_NAME == request.name)// && a.ADMIN_PASSWORD == request.password)
                     .First();
-                if (adminstrator != null)
+
+                if (adminstrator == null)
                 {
-                    var token = JwtService.GenerateAccessToken(adminstrator.ADMIN_ID, "Admin");
-                    return Ok(token);
+                    return Unauthorized("用户不存在");
                 }
-                else
-                    return Unauthorized("用户名或密码错误");
+
+                // 验证密码是否正确（数据库中的密码为加密后的）
+                var passwordVerification = passwordHasher.VerifyHashedPassword(
+                    new IdentityUser(),
+                    adminstrator.ADMIN_PASSWORD,
+                    request.password
+                    );
+                if (passwordVerification != PasswordVerificationResult.Success)
+                {
+                    return Unauthorized("密码错误");
+                }
+
+                var token = JwtService.GenerateAccessToken(adminstrator.ADMIN_ID, "Admin");
+                return Ok(token);
             }
             catch (Exception ex)
             {
