@@ -58,7 +58,8 @@ namespace UniTrade.Controllers
                 // 密码正确则生成 token 并返回
                 string user_id = user.USER_ID;
                 var token = JwtService.GenerateAccessToken(user_id, "User");
-                return Ok(token);
+                var back = new { token = token, id = user_id };
+                return Ok(back);
             }
             catch (Exception ex)
             {
@@ -68,8 +69,42 @@ namespace UniTrade.Controllers
 
 
         //注册
-        //[HttpPost("register")]
-        ////.........
+        [HttpPost("register")]
+        public IActionResult register([FromBody] RegisterInfoViewModel request)
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                var user = db.Queryable<USERS>()
+                    .Where(c => c.NAME == request.name)
+                    .First();
+
+                if (user != null)
+                {
+                    return Unauthorized("用户已存在");
+                }
+
+                int sum = db.Queryable<USERS>().Count() + 1;
+                //生成ID
+                string id = sum.ToString("D20");
+
+                USERS newuser = new USERS();
+                newuser.USER_ID = id;
+                newuser.NAME = request.name;
+                //加密存储
+                newuser.PASSWORD= passwordHasher.HashPassword(new IdentityUser(), request.password); 
+                newuser.REPUTATION = 100;
+
+                //插入表中
+                db.Insertable(newuser).ExecuteCommand();
+
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 
     // 这里的 LoginRequest 移至 ViewModels 中变为 LoginInfoViewModel 了

@@ -46,7 +46,8 @@ namespace UniTrade.Controllers
                 }
 
                 var token = JwtService.GenerateAccessToken(adminstrator.ADMIN_ID, "Admin");
-                return Ok(token);
+                var back = new { token = token, id = adminstrator.ADMIN_ID };
+                return Ok(back);
             }
             catch (Exception ex)
             {
