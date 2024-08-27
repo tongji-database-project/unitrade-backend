@@ -14,7 +14,7 @@ namespace UniTrade.Controllers.Admin
     public class AdminJudgeController : ControllerBase
     {
         [HttpGet]
-        public IActionResult CheckToken()
+        public IActionResult CheckRole()
         {
             var userRole = HttpContext.User.FindFirstValue(ClaimTypes.Role);
             if(userRole== "Admin")
