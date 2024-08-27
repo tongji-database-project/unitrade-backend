@@ -33,7 +33,7 @@ namespace UniTrade.Controllers.Admin
                         reputation = u2.REPUTATION,
                         compaltion_reason = c.COMPLAINT_REASON,
                         customer_name = u1.NAME,
-                        complation_time = (DateTime)c.COMPLAINT_TIME,
+                        complation_time = ((DateTime)c.COMPLAINT_TIME).ToString("o"),
                     })
                     .Take(10)
                     .ToList();

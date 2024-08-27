@@ -7,6 +7,6 @@
         public int reputation { get; set; }
         public string compaltion_reason { get; set; }
         public string customer_name { get; set; }
-        public DateTime complation_time { get; set; }
+        public string complation_time { get; set; }
     }
 }
