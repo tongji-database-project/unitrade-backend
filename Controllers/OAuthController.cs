@@ -24,6 +24,54 @@ namespace UniTrade.Controllers
         IPasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
 
         /// <summary>
+        /// token刷新
+        /// </summary>
+        [HttpPost("refresh-token")]
+        public IActionResult RefreshToken([FromBody] RefreshTokenViewModel request)
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                // 从 RefreshToken 表中查找刷新令牌
+                var refreshToken = db.Queryable<RefreshToken>()
+                    .Where(rt => rt.Token == request.RefreshToken && !rt.IsRevoked)
+                    .First();
+
+                if (refreshToken == null)
+                {
+                    return Unauthorized("无效的刷新令牌");
+                }
+
+                // 检查刷新令牌是否过期
+                if (refreshToken.Expiration <= DateTime.UtcNow)
+                {
+                    return Unauthorized("刷新令牌已过期");
+                }
+
+                // 生成新的访问令牌
+                string userId = refreshToken.UserId;
+                var newAccessToken = JwtService.GenerateAccessToken(userId, "User");
+
+                // 生成新的刷新令牌并更新表
+                var newRefreshToken = JwtService.GenerateRefreshToken();
+                refreshToken.Token = newRefreshToken;
+                refreshToken.Expiration = DateTime.UtcNow.AddDays(7); // 设定刷新令牌的有效期
+                db.Updateable(refreshToken).ExecuteCommand();
+
+                var response = new
+                {
+                    access_token = newAccessToken,
+                    refresh_token = newRefreshToken
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 登录
         /// </summary>
         [HttpPost("login")]
@@ -67,9 +115,24 @@ namespace UniTrade.Controllers
 
                 // 密码或验证码正确则生成 token 并返回
                 string user_id = user.USER_ID;
-                var token = JwtService.GenerateAccessToken(user_id, "User");
-                var back = new { token = token, id = user_id };
-                return Ok(back);
+                var accessToken = JwtService.GenerateAccessToken(user_id, "User");
+                var refreshToken = JwtService.GenerateRefreshToken();
+
+                // 将刷新令牌保存到 RefreshToken 表
+                db.Insertable(new RefreshToken
+                {
+                    Token = refreshToken,
+                    UserId = user_id,
+                    Expiration = DateTime.UtcNow.AddDays(7) // 设置刷新令牌的过期时间
+                }).ExecuteCommand();
+
+                var response = new
+                {
+                    access_token = accessToken,
+                    refresh_token = refreshToken,
+                    id = user_id
+                };
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -77,8 +140,9 @@ namespace UniTrade.Controllers
             }
         }
 
-
-        //注册
+        /// <summary>
+        /// 注册
+        /// </summary>
         [HttpPost("register")]
         public IActionResult register([FromBody] RegisterInfoViewModel request)
         {

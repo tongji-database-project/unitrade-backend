@@ -16,4 +16,8 @@ namespace UniTrade.ViewModels {
         public string PhoneNumber { get; set; } //µç»°
         public string VerificationCode { get; set; }
     }
+    public class RefreshTokenViewModel
+    {
+        public string RefreshToken { get; set; }
+    }
 }

@@ -35,6 +35,20 @@ namespace UniTrade.Tools
         }
 
         /// <summary>
+        /// 生成 refresh token
+        /// </summary>
+        public static string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+
+
+        /// <summary>
         /// 验证 access token
         /// </summary>
         static public bool ValidateAccessToken(string token)
