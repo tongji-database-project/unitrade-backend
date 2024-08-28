@@ -20,4 +20,8 @@ namespace UniTrade.ViewModels {
     {
         public string RefreshToken { get; set; }
     }
+    public class LogoutViewModel
+    {
+        public string RefreshToken { get; set; }
+    }
 }

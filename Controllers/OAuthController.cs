@@ -141,6 +141,29 @@ namespace UniTrade.Controllers
         }
 
         /// <summary>
+        /// 登出
+        /// </summary>
+        [HttpPost("logout")]
+        public IActionResult Logout([FromBody] LogoutViewModel request)
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                // 撤销当前的刷新令牌
+                db.Updateable<RefreshToken>()
+                    .SetColumns(rt => new RefreshToken { IsRevoked = true })
+                    .Where(rt => rt.Token == request.RefreshToken)
+                    .ExecuteCommand();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 注册
         /// </summary>
         [HttpPost("register")]
