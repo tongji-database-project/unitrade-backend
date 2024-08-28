@@ -10,7 +10,7 @@ namespace UniTrade.Tools
     public class JwtService
     {
         /// <summary>
-        /// 生成 JWT
+        /// 生成 access token
         /// </summary>
         static public string GenerateAccessToken(string id, string role)
         {
@@ -25,7 +25,6 @@ namespace UniTrade.Tools
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenParameter.SecretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claimsIdentity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             var token = new JwtSecurityToken(TokenParameter.Issuer,
                     TokenParameter.Audience,
                     claims,
@@ -36,20 +35,7 @@ namespace UniTrade.Tools
         }
 
         /// <summary>
-        /// 刷新 JWT
-        /// </summary>
-        static public string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
-            }
-        }
-
-        /// <summary>
-        /// 验证 JWT
+        /// 验证 access token
         /// </summary>
         static public bool ValidateAccessToken(string token)
         {

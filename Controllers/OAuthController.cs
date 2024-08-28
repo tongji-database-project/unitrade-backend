@@ -42,20 +42,30 @@ namespace UniTrade.Controllers
                 }
 
                 // 加密密码的生成方式（"password" 为密码字符串）：
-                // var hashedPassword = passwordHasher.HashPassword(new IdentityUser(), "password");
 
-                // 验证密码是否正确（数据库中的密码是加密后的）
-                var passwordVerification = passwordHasher.VerifyHashedPassword(
-                        new IdentityUser(),
-                        user.PASSWORD,
-                        request.password
-                        );
-                if (passwordVerification != PasswordVerificationResult.Success)
+                if (request.UseVerificationCode)
                 {
-                    return Unauthorized("密码错误");
+                    // 验证验证码
+                    if (request.VerificationCode != EmailController.LogVeriCode)
+                    {
+                        return Unauthorized("验证码无效");
+                    }
+                }
+                else
+                {
+                    // 验证密码是否正确（数据库中的密码是加密后的）
+                    var passwordVerification = passwordHasher.VerifyHashedPassword(
+                            new IdentityUser(),
+                            user.PASSWORD,
+                            request.password
+                            );
+                    if (passwordVerification != PasswordVerificationResult.Success)
+                    {
+                        return Unauthorized("密码错误");
+                    }
                 }
 
-                // 密码正确则生成 token 并返回
+                // 密码或验证码正确则生成 token 并返回
                 string user_id = user.USER_ID;
                 var token = JwtService.GenerateAccessToken(user_id, "User");
                 var back = new { token = token, id = user_id };
@@ -75,6 +85,12 @@ namespace UniTrade.Controllers
             SqlSugarClient db = Database.GetInstance();
             try
             {
+                // 验证验证码
+                if (request.VerificationCode != EmailController.RegVeriCode)
+                {
+                    return Unauthorized("验证码无效");
+                }
+
                 var user = db.Queryable<USERS>()
                     .Where(c => c.NAME == request.name)
                     .First();
