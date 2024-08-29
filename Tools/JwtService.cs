@@ -28,7 +28,7 @@ namespace UniTrade.Tools
             var token = new JwtSecurityToken(TokenParameter.Issuer,
                     TokenParameter.Audience,
                     claims,
-                    expires: DateTime.Now.AddMinutes(TokenParameter.TokenExpiry),
+                    expires: DateTime.Now.AddMinutes(TokenParameter.AccessTokenExpirationMinutes),
                     signingCredentials: credentials);
 
             return tokenHandler.WriteToken(token);
