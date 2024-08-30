@@ -14,6 +14,7 @@
     public class AuditRefundInfo
     {
         public string refund_id { get; set; }
+        public bool is_agreed { get; set; }
     }
 
 }
