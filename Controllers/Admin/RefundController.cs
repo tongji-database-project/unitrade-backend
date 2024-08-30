@@ -31,6 +31,7 @@ namespace UniTrade.Controllers
                         .Where(r => r.REFUND_STATE == "Pending") // 仅获取状态为 "Pending" 的退款记录
                         .Select((r, ro, h, p, m, seller, buyer) => new QueryRefundInfo
                         {
+                            refund_id = r.REFUND_ID,
                             seller_id = h.SELLER_ID,
                             seller_name = seller.NAME,
                             buyer_id = p.CUSTOMER_ID,
