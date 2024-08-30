@@ -16,7 +16,7 @@ namespace UniTrade.Controllers.User
     public class EditInfoController:ControllerBase
     {
         //个人信息修改
-        [HttpPost("editMyinfo")]
+        [HttpPost]
         public IActionResult EditMyinfo([FromBody] EditInfoViewModel query)
         {
             SqlSugarClient db = Database.GetInstance();
@@ -34,14 +34,14 @@ namespace UniTrade.Controllers.User
                 if (query.NEW_SEX != null)
                 {
                     db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { NAME = query.NEW_SEX })
+                        .SetColumns(u => new USERS { SEX = query.NEW_SEX })
                         .Where(u => u.USER_ID == userIdClaim)
                         .ExecuteCommand();
                 }
                 if (query.NEW_ADDRESS != null)
                 {
                     db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { NAME = query.NEW_ADDRESS })
+                        .SetColumns(u => new USERS { ADDRESS = query.NEW_ADDRESS })
                         .Where(u => u.USER_ID == userIdClaim)
                         .ExecuteCommand();
                 }
