@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NetTaste;
+using Org.BouncyCastle.Asn1.Ocsp;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -20,6 +22,7 @@ namespace UniTrade.Controllers.User
         public IActionResult EditPassword([FromBody] EditPasswordViewModel query)
         {
             SqlSugarClient db = Database.GetInstance();
+            IPasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
             var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
             //获取token中的id
             try
@@ -32,6 +35,7 @@ namespace UniTrade.Controllers.User
                 {
                     if (query.CONFIRM_PASSWORD == query.NEW_PASSWORD)  //验证两次输入的密码是否相同
                     {
+                        query.NEW_PASSWORD = passwordHasher.HashPassword(new IdentityUser(), query.NEW_PASSWORD);
                         db.Updateable<USERS>()
                             .SetColumns(u => new USERS { PASSWORD = query.NEW_PASSWORD })
                             .Where(u => u.USER_ID == userIdClaim)
