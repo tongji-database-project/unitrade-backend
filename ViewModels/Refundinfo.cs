@@ -2,6 +2,7 @@
 {
     public class QueryRefundInfo
     {
+        public string refund_id { get; set; }
         public string seller_id { get; set; }
         public string seller_name { get; set; }
         public string buyer_id { get; set; }
