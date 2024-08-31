@@ -23,7 +23,7 @@ namespace UniTrade.Controllers
                 COMPLAINTS complaint = new COMPLAINTS
                 {
                     COMPLAINT_ID = Guid.NewGuid().ToString(),
-                    COMPLAINT_STATE = "Pending",  // 初始状态为待处理
+                    COMPLAINT_STATE = "PND",  // 初始状态为待处理
                     COMPLAINT_REASON = request.ComplaintReason,
                     COMPLAINT_TIME = DateTime.Now,
                 };
