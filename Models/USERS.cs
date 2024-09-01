@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace UniTrade.Models
 {
@@ -40,7 +39,6 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:False
            /// </summary>           
-           [JsonIgnore]
            public string PASSWORD {get;set;}
 
            /// <summary>
@@ -77,6 +75,13 @@ namespace UniTrade.Models
            /// Nullable:False
            /// </summary>           
            public string SEX {get;set;}
+
+           /// <summary>
+           /// Desc:用户邮箱
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string EMAIL {get;set;}
 
     }
 }
