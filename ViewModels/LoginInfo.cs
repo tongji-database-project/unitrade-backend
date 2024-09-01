@@ -5,7 +5,11 @@ namespace UniTrade.ViewModels {
         public string name { get; set; }
         public string password { get; set; }
     }
-
+    public class AdminLoginInfoViewModel
+    {
+        public string name { get; set; }
+        public string password { get; set; }
+    }
     public class RegisterInfoViewModel
     {
         public string name { get; set; }

@@ -20,7 +20,7 @@ namespace UniTrade.Controllers
         IPasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
 
         [HttpPost]
-        public IActionResult Login([FromBody] LoginInfoViewModel request)
+        public IActionResult Login([FromBody] AdminLoginInfoViewModel request)
         {
             SqlSugarClient db = Database.GetInstance();
             try
