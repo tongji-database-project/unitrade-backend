@@ -15,7 +15,6 @@ namespace UniTrade.ViewModels
         //public string registerType { get; set; }
         public string PhoneNumber { get; set; } //µÁª∞
         public string Email { get; set; } //” œ‰
-
         public string VerificationCode { get; set; }
     }
     public class RefreshTokenViewModel
@@ -25,5 +24,10 @@ namespace UniTrade.ViewModels
     public class LogoutViewModel
     {
         public string RefreshToken { get; set; }
+    }
+    public class AdminLoginInfoViewModel
+    {
+        public string name { get; set; }
+        public string password { get; set; }
     }
 }

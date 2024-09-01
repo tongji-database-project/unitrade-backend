@@ -150,7 +150,7 @@ namespace UniTrade.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
+        /*
         /// <summary>
         /// 登出
         /// </summary>
@@ -173,7 +173,7 @@ namespace UniTrade.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
+        */
         /// <summary>
         /// 注册
         /// </summary>
