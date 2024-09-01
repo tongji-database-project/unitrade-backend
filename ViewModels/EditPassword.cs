@@ -1,4 +1,4 @@
-﻿namespace UniTrade.Models
+﻿namespace UniTrade.ViewModels
 {
     ///<summary>
     ///修改密码表
