@@ -120,19 +120,14 @@ namespace UniTrade.Controllers
                 var refreshToken = JwtService.GenerateRefreshToken();
 
                 // 将刷新令牌保存到 RefreshToken 表
-                db.Insertable(new RefreshToken
-                {
-                    Token = refreshToken,
-                    UserId = user_id,
-                    Expiration = DateTime.UtcNow.AddDays(7) // 设置刷新令牌的过期时间
-                }).ExecuteCommand();
+
 
                 var response = new
                 {
                     access_token = accessToken,
-                    refresh_token = refreshToken,
                     id = user_id
                 };
+                
                 return Ok(response);
             }
             catch (Exception ex)
@@ -219,3 +214,6 @@ namespace UniTrade.Controllers
     // 所有用于与前端交换数据用的实体类都放在 ViewModels 下
 }
 // vim: set sw=4:
+/*
+ 
+ */
