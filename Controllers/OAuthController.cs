@@ -83,6 +83,7 @@ namespace UniTrade.Controllers
                 var user = db.Queryable<USERS>()
                     .Where(c => c.NAME == request.name)
                     .First();
+             
 
                 if (user == null)
                 {
@@ -94,7 +95,7 @@ namespace UniTrade.Controllers
                 if (request.UseVerificationCode)
                 {
                     // 验证验证码
-                    if (request.VerificationCode != EmailController.LogVeriCode)
+                    if (request.password != EmailController.LogVeriCode)
                     {
                         return Unauthorized("验证码无效");
                     }
@@ -191,21 +192,25 @@ namespace UniTrade.Controllers
                 //生成ID
                 string id = sum.ToString("D20");
 
-                USERS newuser = new USERS();
-                newuser.USER_ID = id;
-                newuser.NAME = request.name;
-                //加密存储
-                newuser.PASSWORD= passwordHasher.HashPassword(new IdentityUser(), request.password); 
-                newuser.REPUTATION = 100;
-
+                USERS newuser = new USERS
+                {
+                    USER_ID = id,
+                    NAME = request.name,
+                    //加密存储
+                    PASSWORD = passwordHasher.HashPassword(new IdentityUser(), request.password),
+                    REPUTATION = 100,
+                    PHONE = request.PhoneNumber,
+                    EMAIL = request.Email,
+                };
+               
                 //插入表中
                 db.Insertable(newuser).ExecuteCommand();
 
-                return Ok();
+                return Ok("注册成功");
             }
             catch(Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, $"服务器内部错误: {ex.Message}");
             }
         }
     }

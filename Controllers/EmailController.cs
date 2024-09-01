@@ -38,20 +38,22 @@ namespace UniTrade.Controllers
             Random random = new();
             string Vericode = random.Next(100000, 999999).ToString();
             string bobyText = Vericode;
-            if (type == "register")
+            switch (type)
             {
-                bobyText = "注册验证码:" + Vericode + "，请勿向任何单位或个人泄露。若非本人操作,请忽略该邮件。感谢您对校易购的支持。".ToString();
-                RegVeriCode = Vericode;
-            }
-            else if (type == "findpwd")
-            {
-                bobyText = "重置登录密码验证码:" + Vericode + "，请勿向任何单位或个人泄露。若非本人操作，请忽略该邮件。感谢您对校易购的支持。".ToString();
-                FinVeriCode = Vericode;
-            }
-            else if (type == "login")
-            {
-                bobyText = "邮箱登录验证码:" + Vericode + "，请勿向任何单位或个人泄露，若非本人操作，请忽略该邮件。感谢您对校易购的支持。".ToString();
-                LogVeriCode = Vericode;
+                case "register":
+                    bobyText = "注册验证码:" + Vericode + "，请勿向任何单位或个人泄露。若非本人操作,请忽略该邮件。感谢您对校易购的支持。".ToString();
+                    RegVeriCode = Vericode;
+                    break;
+                case "findpwd":
+                    bobyText = "重置登录密码验证码:" + Vericode + "，请勿向任何单位或个人泄露。若非本人操作，请忽略该邮件。感谢您对校易购的支持。".ToString();
+                    FinVeriCode = Vericode;
+                    break;
+                case "login":
+                    bobyText = "邮箱登录验证码:" + Vericode + "，请勿向任何单位或个人泄露，若非本人操作，请忽略该邮件。感谢您对校易购的支持。".ToString();
+                    LogVeriCode = Vericode;
+                    break;
+                default:
+                    return BadRequest("Invalid type.");
             }
             // 使用smtp服务器 
             string host = "smtp.163.com";
