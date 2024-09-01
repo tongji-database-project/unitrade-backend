@@ -20,7 +20,7 @@ namespace UniTrade.Controllers.User
     public class GetOrderNumContoller:ControllerBase
     {
         [HttpGet]
-        public IActionResult getMyOrder([FromBody] OrderNumViewModels request)
+        public IActionResult getMyOrder()
         {
             SqlSugarClient db = Database.GetInstance();
             // 从 HTTP 请求中获取 token 中的 user_id 信息
@@ -55,7 +55,7 @@ namespace UniTrade.Controllers.User
                 var response = new
                 {
                     all=all_num,
-                    recevied = recevied_num,
+                    received = recevied_num,
                     transit = transit_num,
                     uncommand=uncommand_num
                 };

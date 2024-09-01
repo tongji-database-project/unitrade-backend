@@ -19,24 +19,25 @@ namespace UniTrade.Controllers.User
     public class UsersController : ControllerBase
     {
 
-        [HttpPost]
-        public async Task<IActionResult> GetMyinfo([FromBody] MyinfoViewModel query)
+        [HttpGet]
+        public async Task<IActionResult> GetMyinfo()
         {
             SqlSugarClient db = Database.GetInstance();
+            // 从 HTTP 请求中获取 token 中的 user_id 信息
+            var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
             try
             {
                 var user = db.Queryable<USERS>()
-                    .Where(a => a.USER_ID == query.ID)
+                    .Where(a => a.USER_ID == userIdClaim)
                     .First();
                 if(user == null)
                 {
                     return Unauthorized("用户不存在");   /*暂定，用于测试，实际上线后按照*/
                 }
-                var token = JwtService.GenerateAccessToken(user.USER_ID,"");
-                var back = new { token = token,
+                var back = new {
                     id = user.USER_ID,name = user.NAME,avatar=user.AVATAR,
                     address = user.ADDRESS,phone = user.PHONE,reputation = user.REPUTATION,
-                    sex=user.SEX};
+                    sex=user.SEX,email=user.EMAIL};
                 return (Ok(back));
             }
             catch(Exception ex)

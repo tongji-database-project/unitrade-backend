@@ -33,8 +33,17 @@ namespace UniTrade.Controllers.User
                 }
                 if (query.NEW_SEX != null)
                 {
+                    var new_sex = "";
+                    if(query.NEW_SEX=="男")
+                    {
+                        new_sex = "m";
+                    }
+                    if (query.NEW_SEX == "女")
+                    {
+                        new_sex = "f";
+                    }
                     db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { SEX = query.NEW_SEX })
+                        .SetColumns(u => new USERS { SEX = new_sex })
                         .Where(u => u.USER_ID == userIdClaim)
                         .ExecuteCommand();
                 }
