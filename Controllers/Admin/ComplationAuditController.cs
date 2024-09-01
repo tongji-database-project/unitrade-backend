@@ -53,7 +53,7 @@ namespace UniTrade.Controllers.Admin
             {
                 int num1 = db.Updateable<COMPLAINTS>()
                     .Where(c => c.COMPLAINT_ID == result.complation_id && c.COMPLAINT_STATE == "Pending")
-                    .SetColumns(c => new COMPLAINTS { COMPLAINT_STATE = "Completed" })
+                    .SetColumns(c => new COMPLAINTS { COMPLAINT_STATE = result.is_passed ? "Agreed" : "Disagreed" })
                     .ExecuteCommand();
 
                 if (num1 != 0 && result.is_passed)
