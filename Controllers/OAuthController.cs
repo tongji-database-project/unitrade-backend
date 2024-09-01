@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace UniTrade.Controllers
 {
@@ -22,7 +23,7 @@ namespace UniTrade.Controllers
         // TODO: token 刷新，参考 https://www.cnblogs.com/l-monstar/p/17337768.html
 
         IPasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
-
+        /*
         /// <summary>
         /// token刷新
         /// </summary>
@@ -70,7 +71,7 @@ namespace UniTrade.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
+        */
         /// <summary>
         /// 登录
         /// </summary>
@@ -80,20 +81,20 @@ namespace UniTrade.Controllers
             SqlSugarClient db = Database.GetInstance();
             try
             {
-                var user = db.Queryable<USERS>()
-                    .Where(c => c.NAME == request.name)
-                    .First();
-             
-
-                if (user == null)
-                {
-                    return Unauthorized("用户不存在");
-                }
-
-                // 加密密码的生成方式（"password" 为密码字符串）：
+                USERS user;
 
                 if (request.UseVerificationCode)
                 {
+                    user = db.Queryable<USERS>()
+                    .Where(c => c.PHONE == request.name || c.EMAIL == request.name)
+                    .First();
+
+
+
+                    if (user == null)
+                    {
+                        return Unauthorized("用户不存在");
+                    }
                     // 验证验证码
                     if (request.password != EmailController.LogVeriCode)
                     {
@@ -102,6 +103,15 @@ namespace UniTrade.Controllers
                 }
                 else
                 {
+                    user = db.Queryable<USERS>()
+                    .Where(c => c.NAME == request.name)
+                    .First();
+
+
+                    if (user == null)
+                    {
+                        return Unauthorized("用户不存在");
+                    }
                     // 验证密码是否正确（数据库中的密码是加密后的）
                     var passwordVerification = passwordHasher.VerifyHashedPassword(
                             new IdentityUser(),
@@ -117,17 +127,22 @@ namespace UniTrade.Controllers
                 // 密码或验证码正确则生成 token 并返回
                 string user_id = user.USER_ID;
                 var accessToken = JwtService.GenerateAccessToken(user_id, "User");
-                var refreshToken = JwtService.GenerateRefreshToken();
-
+                //var refreshToken = JwtService.GenerateRefreshToken();
+                /*
                 // 将刷新令牌保存到 RefreshToken 表
-
-
+                db.Insertable(new RefreshToken
+                {
+                    Token = refreshToken,
+                    UserId = user_id,
+                    Expiration = DateTime.UtcNow.AddDays(7) // 设置刷新令牌的过期时间
+                }).ExecuteCommand();
+                */
                 var response = new
                 {
                     access_token = accessToken,
+                    //refresh_token = refreshToken,
                     id = user_id
                 };
-                
                 return Ok(response);
             }
             catch (Exception ex)
@@ -190,20 +205,23 @@ namespace UniTrade.Controllers
                 USERS newuser = new USERS
                 {
                     USER_ID = id,
+                    AVATAR = " ",
                     NAME = request.name,
-                    //加密存储
                     PASSWORD = passwordHasher.HashPassword(new IdentityUser(), request.password),
-                    REPUTATION = 100,
                     PHONE = request.PhoneNumber,
-                    EMAIL = request.Email,
+                    ADDRESS = " ",
+                    REPUTATION = 100,
+                    CREDIT_NUMBER = " ",
+                    SEX = " ",
+                    EMAIL = request.Email
                 };
-               
+
                 //插入表中
                 db.Insertable(newuser).ExecuteCommand();
 
                 return Ok("注册成功");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, $"服务器内部错误: {ex.Message}");
             }
@@ -214,6 +232,3 @@ namespace UniTrade.Controllers
     // 所有用于与前端交换数据用的实体类都放在 ViewModels 下
 }
 // vim: set sw=4:
-/*
- 
- */
