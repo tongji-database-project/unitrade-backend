@@ -4,6 +4,7 @@ using SqlSugar;
 using System;
 using System.Collections.Generic;
 using UniTrade.Tools;
+using System.Security.Claims;
 
 namespace UniTrade.Controllers
 {
@@ -19,6 +20,26 @@ namespace UniTrade.Controllers
 
             try
             {
+                //获取当前用户ID
+                var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
+
+                Console.Write("errortest0");
+
+                //验证用户是否存在
+                var seller = db.Queryable<USERS>()
+                    .Where(u => u.USER_ID == userId)
+                    .First();
+
+                Console.Write("errortest1");
+
+                if (seller == null)
+                {
+                    Console.Write("errortest2");
+                    return Unauthorized("用户不存在");
+                }
+
+                Console.Write("errortest3");
+
                 // 创建新的投诉记录
                 COMPLAINTS complaint = new COMPLAINTS
                 {
