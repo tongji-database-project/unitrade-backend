@@ -3,7 +3,7 @@ using MimeKit;
 
 namespace UniTrade.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class EmailController : Controller
     {
