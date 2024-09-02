@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using UniTrade.Tools;
 using UniTrade.Models;
+using UniTrade.ViewModel;
 using SqlSugar;
+using UniTrade.ViewModels;
 
 namespace UniTrade.Controllers.Message
 {
@@ -26,6 +28,7 @@ namespace UniTrade.Controllers.Message
                     .Queryable<COMMUNICATION>()
                     .Where(it => it.SENDER_ID == userIdClaim || it.RECEIVER_ID == userIdClaim)
                     .Select(it => it.RECEIVER_ID == userIdClaim ? it.SENDER_ID : it.RECEIVER_ID)
+                    .Distinct()
                     .ToListAsync();
 
 
@@ -43,15 +46,23 @@ namespace UniTrade.Controllers.Message
         // user_id 为另一方的 ID
         [HttpGet]
         [Route("get_latest_message")]
-        public async Task<ActionResult<string>> GetLatestMessage(string user_id)
+        public async Task<ActionResult<LatestMessageViewModel>> GetLatestMessage(string user_id)
         {
-            // TODO: 增加 ViewModel 以提供用户名与最新消息
             SqlSugarClient db = Database.GetInstance();
             // 从 HTTP 请求中获取 token 中的 user_id 信息
             var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
 
             try {
-                var result = await db
+                var username = await db
+                    .Queryable<USERS>()
+                    .Where(it => it.USER_ID == user_id)
+                    .Select(it => it.NAME)
+                    .FirstAsync();
+
+                if (username == null)
+                    return NotFound("对方用户不存在");
+
+                var content = await db
                     .Queryable<COMMUNICATION>()
                     .Where(it =>
                             it.SENDER_ID == userIdClaim && it.RECEIVER_ID == user_id
@@ -60,8 +71,8 @@ namespace UniTrade.Controllers.Message
                     .Select(it => it.COMMUNICATION_CONTENT)
                     .FirstAsync();
 
-                if (result != null)
-                    return Ok(result);
+                if (content != null)
+                    return Ok(new LatestMessageViewModel(username, content));
                 else
                     return NotFound("未找到相关信息");
             }
@@ -74,41 +85,56 @@ namespace UniTrade.Controllers.Message
         // user_id 为另一方的 ID
         [HttpGet]
         [Route("get_messages")]
-        public async Task<ActionResult<IEnumerable<COMMUNICATION>>> GetMessages(string user_id)
+        public async Task<ActionResult<MessagesViewModel>> GetMessages(string user_id)
         {
-            // TODO: 附带用户名
             SqlSugarClient db = Database.GetInstance();
             // 从 HTTP 请求中获取 token 中的 user_id 信息
             var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
 
             try {
-                var result = await db
+                var username = await db
+                    .Queryable<USERS>()
+                    .Where(it => it.USER_ID == user_id)
+                    .Select(it => it.NAME)
+                    .FirstAsync();
+
+                if (username == null)
+                    return NotFound("对方用户不存在");
+
+                var contents = db
                     .Queryable<COMMUNICATION>()
                     .Where(it =>
                             it.SENDER_ID == userIdClaim && it.RECEIVER_ID == user_id
                             || it.SENDER_ID == user_id && it.RECEIVER_ID == userIdClaim)
-                    .ToListAsync();
+                    .OrderBy(it => it.COMMUNICATION_TIME)
+                    .ToList()
+                    .Select(it => SingleMessage.FromCommunication(it));
 
-                if (result != null)
-                    return Ok(result);
+                if (contents != null)
+                    return Ok(new MessagesViewModel(username, contents));
                 else
                     return NotFound("未找到相关信息");
             }
             catch (Exception ex) {
-                return StatusCode(500, $"服务器错误：{ex.Message}");
+                return StatusCode(500, $"信息获取时，服务器错误：{ex.Message}");
             }
         }
 
         [HttpPost]
         [Route("send_message")]
-        public async Task<ActionResult> SendMessages([FromBody] COMMUNICATION message)
+        public async Task<ActionResult> SendMessages([FromBody] SingleMessage message)
         {
             SqlSugarClient db = Database.GetInstance();
             // 从 HTTP 请求中获取 token 中的 user_id 信息
             var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
 
             try {
-                var count = db.Insertable(message).ExecuteCommand();
+                var mes = new COMMUNICATION();
+                mes.SENDER_ID = message.sender;
+                mes.RECEIVER_ID = message.receiver;
+                mes.COMMUNICATION_CONTENT = message.content;
+                mes.COMMUNICATION_TIME = message.time;
+                var count = db.Insertable(mes).ExecuteCommand();
 
                 if (count > 0)
                     return Ok();
@@ -116,6 +142,7 @@ namespace UniTrade.Controllers.Message
                     return Forbid();
             }
             catch (Exception ex) {
+                Console.WriteLine($"{message.sender} send to {message.receiver} '{message.content}' at {message.time}: {ex}");
                 return StatusCode(500, $"服务器错误：{ex.Message}");
             }
         }
