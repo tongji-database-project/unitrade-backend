@@ -14,6 +14,7 @@ namespace UniTrade.Controllers.User
     [ApiController]
     public class SellerController : ControllerBase
     {
+        //发布商品的api
         [Authorize]
         [HttpPost("publish")]
         public async Task<IActionResult> PublishProduct([FromBody] PublishProductViewModel model)
@@ -33,12 +34,20 @@ namespace UniTrade.Controllers.User
 
                 Console.Write("errortest1");
 
+
                 if (seller == null)
                 {
                     Console.Write("errortest2");
                     return Unauthorized("用户不存在");
                 }
 
+                // 保存图片到本地
+                var fileName = $"{Guid.NewGuid()}_{model.Picture.FileName}";
+                var filePath = Path.Combine(@"C:\data\images\cover", fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.Picture.CopyToAsync(stream);
+                }
                 Console.Write("errortest3");
 
                 //创建新的商品记录
@@ -49,7 +58,7 @@ namespace UniTrade.Controllers.User
                     PRICE = model.Price,
                     INVENTORY = model.Inventory,
                     MERCHANDISE_TYPE = model.Type,
-                    PICTURE_PATH = model.PicturePath
+                    COVER_PICTURE_PATH = $"/images/cover/{fileName}" // 保存相对路径到数据库
                 };
 
                 Console.Write("errortest4");
@@ -85,5 +94,43 @@ namespace UniTrade.Controllers.User
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
+        //上传商品图片的api
+        [HttpPost("sendPicture")]
+        public async Task<IActionResult> SendProductPicture(IFormFile file)
+        {
+            Console.Write("errortest11");
+            // 检查文件是否为空
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("没有选择文件上传");
+            }
+            Console.Write("errortest12");
+            // 定义文件保存路径
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(@"C:\data\images\cover", fileName);
+            Console.Write("errortest13");
+            try
+            {
+                // 保存文件到指定路径
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    Console.Write("errortest14");
+                    await file.CopyToAsync(stream);
+                }
+
+                // 返回成功响应，并将文件路径返回给前端
+                Console.Write("errortest15");
+                return Ok(new { url = $"/uploads/{fileName}" });
+            }
+            catch (Exception ex)
+            {
+                // 处理可能发生的异常
+                Console.Write("errortest16");
+                return StatusCode(500, $"文件上传失败: {ex.Message}");
+            }
+        }
+
     }
 }
