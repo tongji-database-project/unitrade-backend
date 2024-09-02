@@ -31,7 +31,10 @@ namespace UniTrade.Controllers.User
                     .Where(u => u.USER_ID == userIdClaim)
                          .Select(u => u.PASSWORD)
                          .Single();
-                if (query.ORIGIN_PASSWORD == password)  //验证密码是否正确
+                var passwordVerification = passwordHasher.VerifyHashedPassword(
+                    new IdentityUser(),password,query.ORIGIN_PASSWORD
+                    );  /*验证原密码是否正确*/
+                if (passwordVerification== PasswordVerificationResult.Success)  //验证密码是否正确
                 {
                     if (query.CONFIRM_PASSWORD == query.NEW_PASSWORD)  //验证两次输入的密码是否相同
                     {
@@ -51,7 +54,7 @@ namespace UniTrade.Controllers.User
                 {
                     return BadRequest("原密码输入错误");
                 }
-                return (Ok());
+                return Ok();
             }
             catch (Exception ex)
             {

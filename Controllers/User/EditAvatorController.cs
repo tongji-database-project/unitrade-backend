@@ -1,6 +1,6 @@
-﻿namespace UniTrade.Controllers.User
+﻿using Microsoft.AspNetCore.Components;
+
+namespace UniTrade.Controllers.User
 {
-    public class EditAvatorController
-    {
-    }
+
 }
