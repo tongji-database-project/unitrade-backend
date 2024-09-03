@@ -28,7 +28,7 @@ namespace UniTrade.Controllers
                             JoinType.Inner, h.SELLER_ID == seller.USER_ID,   // HOLDS 与 USERS 表连接
                             JoinType.Inner, p.CUSTOMER_ID == buyer.USER_ID      // PLACES 与 USERS 表连接
                         })
-                        .Where(r => r.REFUND_STATE == "Pending") // 仅获取状态为 "Pending" 的退款记录
+                        .Where(r => r.REFUND_STATE == "Pen") // 仅获取状态为 "Pending" 的退款记录
                         .Select((r, ro, h, p, m, seller, buyer) => new QueryRefundInfo
                         {
                             refund_id = r.REFUND_ID,
@@ -57,7 +57,7 @@ namespace UniTrade.Controllers
             try
             {
                 var refund = db.Queryable<REFUNDS>()
-                .Where(r => r.REFUND_ID == result.refund_id && r.REFUND_STATE == "Pending")
+                .Where(r => r.REFUND_ID == result.refund_id && r.REFUND_STATE == "Pen")
                 .First();
 
                 if (refund == null)
@@ -68,11 +68,11 @@ namespace UniTrade.Controllers
                 {
                     if(result.is_agreed == true)
                     {
-                        refund.REFUND_STATE = "Agreed";
+                        refund.REFUND_STATE = "Agr";
                     }
                     else
                     {
-                        refund.REFUND_STATE = "Disagreed";
+                        refund.REFUND_STATE = "Dis";
                     }
                     db.Updateable(refund).ExecuteCommand();
                     return Ok("Refund completed successfully.");

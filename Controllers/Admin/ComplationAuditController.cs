@@ -25,7 +25,7 @@ namespace UniTrade.Controllers.Admin
                         JoinType.Inner,cc.CUSTOMER_ID==u1.USER_ID,
                         JoinType.Inner,bc.SELLER_ID==u2.USER_ID,
                     })
-                    .Where(c => c.COMPLAINT_STATE == "Pending")
+                    .Where(c => c.COMPLAINT_STATE == "Pen")
                     .Select((c, cc, bc, u1, u2) => new ComplationAuditInfo
                     {
                         complation_id = c.COMPLAINT_ID,
@@ -52,8 +52,8 @@ namespace UniTrade.Controllers.Admin
             try
             {
                 int num1 = db.Updateable<COMPLAINTS>()
-                    .Where(c => c.COMPLAINT_ID == result.complation_id && c.COMPLAINT_STATE == "Pending")
-                    .SetColumns(c => new COMPLAINTS { COMPLAINT_STATE = result.is_passed ? "Agreed" : "Disagreed" })
+                    .Where(c => c.COMPLAINT_ID == result.complation_id && c.COMPLAINT_STATE == "Pen")
+                    .SetColumns(c => new COMPLAINTS { COMPLAINT_STATE = result.is_passed ? "Agr" : "Dis" })
                     .ExecuteCommand();
                 if (num1 == 0)
                 {

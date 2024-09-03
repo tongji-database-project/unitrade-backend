@@ -25,7 +25,7 @@ namespace UniTrade.Controllers
                             JoinType.Inner, b.SELLER_ID == seller.USER_ID,       // BE_COMPLAINTED 与 USERS 表连接
                             JoinType.Inner, c.CUSTOMER_ID == buyer.USER_ID   // COMMIT_COMPLAINT 与 USERS 表连接
                         })
-                        .Where(a => a.APPEAL_STATE == "Pending") // 仅获取状态为 "Pending" 的申诉记录
+                        .Where(a => a.APPEAL_STATE == "Pen") // 仅获取状态为 "Pending" 的申诉记录
                         .Select((a, b, c, seller, buyer) => new QueryAppealInfo
                         {
                             appeal_id = a.APPEAL_ID,
@@ -54,7 +54,7 @@ namespace UniTrade.Controllers
             try
             {
                 var appeal = db.Queryable<APPEALS>()
-                .Where(a => a.APPEAL_ID == result.appeal_id && a.APPEAL_STATE == "Pending")
+                .Where(a => a.APPEAL_ID == result.appeal_id && a.APPEAL_STATE == "Pen")
                 .First();
 
                 if (appeal == null)
@@ -65,7 +65,7 @@ namespace UniTrade.Controllers
                 {
                     if (result.is_agreed == true)
                     {
-                        appeal.APPEAL_STATE = "Agreed";
+                        appeal.APPEAL_STATE = "Agr";
                         var seller = db.Queryable<APPEALS, BE_COMPLAINTED, USERS>(
                             (a, b, u) => new object[] {
                                 JoinType.Inner, a.COMPLAINT_ID==b.COMPLAINT_ID,
@@ -83,7 +83,7 @@ namespace UniTrade.Controllers
                     }
                     else
                     {
-                        appeal.APPEAL_STATE = "Disagreed";
+                        appeal.APPEAL_STATE = "Dis";
                     }
                     db.Updateable(appeal).ExecuteCommand();
                     return Ok("Appeal completed successfully.");

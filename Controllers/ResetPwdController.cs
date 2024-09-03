@@ -34,7 +34,7 @@ namespace UniTrade.Controllers
 
             if(user.EMAIL != request.Email && user.PHONE != request.PhoneNumber)
             {
-
+                return BadRequest("邮箱或手机号不匹配");
             }
 
             // 验证新密码与旧密码是否相同
