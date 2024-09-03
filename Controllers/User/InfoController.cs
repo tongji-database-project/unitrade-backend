@@ -5,6 +5,7 @@ using System.Security.Claims;
 using SqlSugar;
 using UniTrade.Models;
 using UniTrade.Tools;
+using UniTrade.ViewModels;
 
 namespace UniTrade.Controllers.User
 {
@@ -14,7 +15,7 @@ namespace UniTrade.Controllers.User
     {
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<string>> Get()
+        public async Task<ActionResult<UserInfo>> Get()
         {
             SqlSugarClient db = Database.GetInstance();
             // 从 HTTP 请求中获取 token 中的 user_id 信息
@@ -25,7 +26,7 @@ namespace UniTrade.Controllers.User
                 .Where(it => it.USER_ID == userIdClaim)
                 .FirstAsync();
 
-            return Ok(userInfo);
+            return Ok(new UserInfo(userInfo));
         }
     }
 }
