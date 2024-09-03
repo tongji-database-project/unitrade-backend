@@ -72,10 +72,7 @@ namespace UniTrade.Controllers.User
                     };
                     await db.Insertable(newDetailsPicture).ExecuteCommandAsync();
                 }
-
-
-
-                return Ok(new { message = "商品发布成功", productId = newProduct.MERCHANDISE_ID });
+                return Ok();
             }
             catch (Exception ex)
             {
