@@ -28,6 +28,24 @@ namespace UniTrade.Controllers.User
 
             return Ok(new UserInfo(userInfo));
         }
+
+        [HttpGet("others/{id}")]
+        public async Task<ActionResult<UserInfo>> GetOthersInfo(string id)
+        {
+            SqlSugarClient db = Database.GetInstance();
+
+            var userInfo = await db.Queryable<USERS>()
+                .Where(it => it.USER_ID == id)
+                .FirstAsync();
+
+            if (userInfo == null)
+            {
+                Console.WriteLine($"找不到用户{id}");
+                return NotFound("用户不存在");
+            } else {
+                return Ok(new UserInfo(userInfo));
+            }
+        }
     }
 }
 // vim: set sw=4:
