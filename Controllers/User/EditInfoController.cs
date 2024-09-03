@@ -25,20 +25,33 @@ namespace UniTrade.Controllers.User
             //获取token中的id
             try
             {
-                if (query.NEW_NAME!="")
+                if (query.NEW_NAME!="")  //对名称进行修改
                 {
                     is_edit = true;
-                    Console.WriteLine(query.NEW_NAME.Length);
-                    db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { NAME = query.NEW_NAME })
-                        .Where(u => u.USER_ID == userIdClaim)
-                        .ExecuteCommand();
+                    var name = db.Queryable<USERS>().
+                        Where(u => u.USER_ID == userIdClaim).
+                        Select(u => u.NAME).Single();
+                    if(name==query.NEW_NAME)
+                    {
+                        return BadRequest("与原名字相同");
+                    }
+                    bool exists = db.Queryable<USERS>()
+                        .Any(u => u.NAME == query.NEW_NAME);
+                    if(exists)
+                    {
+                        return BadRequest("已存在该名称");
+                    }
+                    else
+                    {
+                        db.Updateable<USERS>()
+                            .SetColumns(u => new USERS { NAME = query.NEW_NAME })
+                            .Where(u => u.USER_ID == userIdClaim)
+                            .ExecuteCommand();
+                    }
                 }
                 if (query.NEW_SEX != "")
                 {
                     is_edit = true;
-                    Console.WriteLine("SEX");
-                    Console.WriteLine(query.NEW_SEX);
                     var new_sex = "";
                     if (query.NEW_SEX == "男")
                     {
@@ -56,7 +69,6 @@ namespace UniTrade.Controllers.User
                 if (query.NEW_ADDRESS != "")
                 {
                     is_edit = true;
-                    Console.WriteLine("ADDRESS");
                     db.Updateable<USERS>()
                         .SetColumns(u => new USERS { ADDRESS = query.NEW_ADDRESS })
                         .Where(u => u.USER_ID == userIdClaim)
@@ -68,7 +80,7 @@ namespace UniTrade.Controllers.User
                 }
                 else
                 {
-                    return (Ok());
+                    return (BadRequest("无输入"));
                 }
             }
             catch (Exception ex)
@@ -78,35 +90,3 @@ namespace UniTrade.Controllers.User
         }
     }
 }
-/*
-                 if (query.NEW_NAME != null)
-                {
-                    db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { NAME=query.NEW_NAME})
-                        .Where(u => u.USER_ID == userIdClaim)
-                        .ExecuteCommand();
-                }
-                if (query.NEW_SEX != null)
-                {
-                    var new_sex = "";
-                    if(query.NEW_SEX=="男")
-                    {
-                        new_sex = "m";
-                    }
-                    if (query.NEW_SEX == "女")
-                    {
-                        new_sex = "f";
-                    }
-                    db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { SEX = new_sex })
-                        .Where(u => u.USER_ID == userIdClaim)
-                        .ExecuteCommand();
-                }
-                if (query.NEW_ADDRESS != null)
-                {
-                    db.Updateable<USERS>()
-                        .SetColumns(u => new USERS { ADDRESS = query.NEW_ADDRESS })
-                        .Where(u => u.USER_ID == userIdClaim)
-                        .ExecuteCommand();
-                }
- */
