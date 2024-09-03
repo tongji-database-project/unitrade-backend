@@ -55,34 +55,39 @@ namespace UniTrade.Controllers.Admin
                     .Where(c => c.COMPLAINT_ID == result.complation_id && c.COMPLAINT_STATE == "Pending")
                     .SetColumns(c => new COMPLAINTS { COMPLAINT_STATE = result.is_passed ? "Agreed" : "Disagreed" })
                     .ExecuteCommand();
-
-                if (num1 != 0 && result.is_passed)
+                if (num1 == 0)
                 {
-                    var seller = db.Queryable<COMPLAINTS, BE_COMPLAINTED, USERS>(
-                        (c, bc, u) => new object[] {
-                            JoinType.Inner,c.COMPLAINT_ID==bc.COMPLAINT_ID,
-                            JoinType.Inner,bc.SELLER_ID==u.USER_ID,
-                        })
-                        .Where(c => c.COMPLAINT_ID == result.complation_id)
-                        .Select((c, bc, u) => new { id = u.USER_ID, reputation = u.REPUTATION })
-                        .First();
-
-                    if (seller != null)
-                    {
-                        var num2 = db.Updateable<USERS>()
-                            .Where(u => u.USER_ID == seller.id)
-                            .SetColumns(u => new USERS { REPUTATION = (short)(seller.reputation - 5 > 0 ? seller.reputation - 5 : 0) })
-                            .ExecuteCommand();
-                        return Ok();
-                    }
-                    else
-                    {
-                        return Unauthorized("数据库数据缺失");
-                    }
+                    return Unauthorized();
                 }
                 else
                 {
-                    return Ok();
+                    if (result.is_passed)
+                    {
+                        var seller = db.Queryable<COMPLAINTS, BE_COMPLAINTED, USERS>(
+                            (c, bc, u) => new object[] {
+                                JoinType.Inner,c.COMPLAINT_ID==bc.COMPLAINT_ID,
+                                JoinType.Inner,bc.SELLER_ID==u.USER_ID,
+                            })
+                            .Where(c => c.COMPLAINT_ID == result.complation_id)
+                            .Select((c, bc, u) => new { id = u.USER_ID, reputation = u.REPUTATION })
+                            .First();
+                        if (seller != null)
+                        {
+                            var num2 = db.Updateable<USERS>()
+                                .Where(u => u.USER_ID == seller.id)
+                                .SetColumns(u => new USERS { REPUTATION = (short)(seller.reputation - 5 > 0 ? seller.reputation - 5 : 0) })
+                                .ExecuteCommand();
+                            return Ok();
+                        }
+                        else
+                        {
+                            return Unauthorized("数据库数据缺失");
+                        }
+                    }
+                    else
+                    {
+                        return Ok();
+                    }
                 }
             }
             catch (Exception ex)

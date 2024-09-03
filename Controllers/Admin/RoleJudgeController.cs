@@ -9,9 +9,9 @@ using System.Security.Claims;
 
 namespace UniTrade.Controllers.Admin
 {
-    [Route("adminjudge")]
+    [Route("rolejudge")]
     [ApiController]
-    public class AdminJudgeController : ControllerBase
+    public class RoleJudgeController : ControllerBase
     {
         [HttpGet]
         public IActionResult CheckRole()
@@ -19,11 +19,15 @@ namespace UniTrade.Controllers.Admin
             var userRole = HttpContext.User.FindFirstValue(ClaimTypes.Role);
             if(userRole== "Admin")
             {
-                return Ok(true);
+                return Ok("Admin");
+            }
+            else if(userRole == "User")
+            {
+                return Ok("User");
             }
             else
             {
-                return Unauthorized(false);
+                return Ok("Visitor");
             }
         }
     }
