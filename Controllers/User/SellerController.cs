@@ -41,45 +41,40 @@ namespace UniTrade.Controllers.User
                     return Unauthorized("用户不存在");
                 }
 
-                // 保存图片到本地
-                var fileName = $"{Guid.NewGuid()}_{model.Picture.FileName}";
-                var filePath = Path.Combine(@"C:\data\images\cover", fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await model.Picture.CopyToAsync(stream);
-                }
                 Console.Write("errortest3");
 
                 //创建新的商品记录
                 var newProduct = new MERCHANDISES
                 {
                     MERCHANDISE_ID = Guid.NewGuid().ToString(),
-                    MERCHANDISE_NAME = model.Name,
-                    PRICE = model.Price,
-                    INVENTORY = model.Inventory,
-                    MERCHANDISE_TYPE = model.Type,
-                    COVER_PICTURE_PATH = $"/images/cover/{fileName}" // 保存相对路径到数据库
+                    MERCHANDISE_NAME = model.name,
+                    PRICE = model.price,
+                    INVENTORY = model.inventory,
+                    MERCHANDISE_TYPE = model.type,
+                    COVER_PICTURE_PATH = model.cover_image_url,
+                    DETAILS = model.product_details
                 };
-
-                Console.Write("errortest4");
-                //保存商品到数据库
                 await db.Insertable(newProduct).ExecuteCommandAsync();
-                db.Aop.OnLogExecuting = (sql, parameters) =>
-                {
-                    Console.WriteLine("SQL: " + sql);
-                    Console.WriteLine("Parameters: " + string.Join(", ", parameters.Select(p => $"{p.ParameterName}: {p.Value}")));
-                };
-                Console.Write("errortest5");
-                //建立卖家与商品的关系
-                var sellsRecord = new SELLS
+                //创建商品与卖家的关系
+                var newSellsRecord = new SELLS
                 {
                     MERCHANDISE_ID = newProduct.MERCHANDISE_ID,
                     SELLER_ID = seller.USER_ID
                 };
-                Console.Write("errortest6");
-                //保存卖家与商品的关系到数据库
-                await db.Insertable(sellsRecord).ExecuteCommandAsync();
-                Console.Write("errortest7");
+                await db.Insertable(newSellsRecord).ExecuteCommandAsync();
+                //创建商品详情图片与商品的关系
+                foreach (var imageUrl in model.product_image_urls)
+                {
+                    var newDetailsPicture = new MERCHANDISES_PICTURE
+                    {
+                        MERCHANDISE_ID = newProduct.MERCHANDISE_ID,
+                        PICTURE_PATH = imageUrl
+                    };
+                    await db.Insertable(newDetailsPicture).ExecuteCommandAsync();
+                }
+
+
+
                 return Ok(new { message = "商品发布成功", productId = newProduct.MERCHANDISE_ID });
             }
             catch (Exception ex)
@@ -95,34 +90,25 @@ namespace UniTrade.Controllers.User
             }
         }
 
-
-        //上传商品图片的api
-        [HttpPost("sendPicture")]
-        public async Task<IActionResult> SendProductPicture(IFormFile file)
+        //上传商品详情图片的api
+        [HttpPost("sendDetails")]
+        public async Task<IActionResult> SendProductDetails(IFormFile file)
         {
             Console.Write("errortest11");
-            // 检查文件是否为空
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("没有选择文件上传");
-            }
-            Console.Write("errortest12");
-            // 定义文件保存路径
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var filePath = Path.Combine(@"C:\data\images\cover", fileName);
-            Console.Write("errortest13");
             try
             {
-                // 保存文件到指定路径
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    Console.Write("errortest14");
-                    await file.CopyToAsync(stream);
-                }
+                // 调用 StoreImage 工具类保存图片，指定 API 类型为 "productDetails"
+                var imageUrl = await StoreImage.SaveImageAsync(file, "productDetails");
 
-                // 返回成功响应，并将文件路径返回给前端
                 Console.Write("errortest15");
-                return Ok(new { url = $"/uploads/{fileName}" });
+                // 返回成功响应，并将文件路径返回给前端
+                return Ok(new { url = imageUrl });
+            }
+            catch (ArgumentException argEx)
+            {
+                // 处理文件为空或无效的情况
+                Console.Write("errortest12");
+                return BadRequest(argEx.Message);
             }
             catch (Exception ex)
             {
@@ -132,5 +118,33 @@ namespace UniTrade.Controllers.User
             }
         }
 
+
+        //上传商品封面图片的api
+        [HttpPost("sendCover")]
+        public async Task<IActionResult> SendProductCover(IFormFile file)
+        {
+            Console.Write("errortest11");
+            try
+            {
+                // 调用 StoreImage 工具类保存图片，指定 API 类型为 "cover"
+                var imageUrl = await StoreImage.SaveImageAsync(file, "cover");
+
+                Console.Write("errortest15");
+                // 返回成功响应，并将文件路径返回给前端
+                return Ok(new { url = imageUrl });
+            }
+            catch (ArgumentException argEx)
+            {
+                // 处理文件为空或无效的情况
+                Console.Write("errortest12");
+                return BadRequest(argEx.Message);
+            }
+            catch (Exception ex)
+            {
+                // 处理可能发生的异常
+                Console.Write("errortest16");
+                return StatusCode(500, $"文件上传失败: {ex.Message}");
+            }
+        }
     }
 }
