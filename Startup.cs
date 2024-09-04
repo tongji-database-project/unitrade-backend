@@ -85,7 +85,7 @@ namespace UniTrade
             });
 
             // 配置依赖注入
-            services.AddHttpClient<PayHelper>();
+
 
         }
 

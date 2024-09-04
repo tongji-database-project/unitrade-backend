@@ -8,7 +8,7 @@ using UniTrade.Tools;
 using System.Threading.Tasks;
 using SqlSugar;
 
-namespace UniTrade.Controllers
+namespace UniTrade.Controllers.Checkout
 {
     [Route("[controller]")]
     [ApiController]
