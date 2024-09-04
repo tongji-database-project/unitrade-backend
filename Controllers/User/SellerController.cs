@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SqlSugar;
 using System;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using UniTrade.Models;
 using UniTrade.Tools;
@@ -24,31 +25,22 @@ namespace UniTrade.Controllers.User
             {
                 //获取当前用户ID
                 var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
-
-                Console.Write("errortest0");
-
                 //验证用户是否存在
                 var seller = db.Queryable<USERS>()
                     .Where(u => u.USER_ID == userId)
                     .First();
-
-                Console.Write("errortest1");
-
-
                 if (seller == null)
                 {
                     Console.Write("errortest2");
                     return Unauthorized("用户不存在");
                 }
 
-                Console.Write("errortest3");
-
                 //创建新的商品记录
                 var newProduct = new MERCHANDISES
                 {
                     MERCHANDISE_ID = Guid.NewGuid().ToString(),
                     MERCHANDISE_NAME = model.name,
-                    PRICE = model.price,
+                    PRICE = model.price*100,
                     INVENTORY = model.inventory,
                     MERCHANDISE_TYPE = model.type,
                     COVER_PICTURE_PATH = model.cover_image_url,
@@ -76,7 +68,6 @@ namespace UniTrade.Controllers.User
             }
             catch (Exception ex)
             {
-                Console.Write("errortest10");
                 Console.WriteLine(ex.Message);
                 db.Aop.OnLogExecuting = (sql, parameters) =>
                 {
@@ -91,26 +82,22 @@ namespace UniTrade.Controllers.User
         [HttpPost("sendDetails")]
         public async Task<IActionResult> SendProductDetails(IFormFile file)
         {
-            Console.Write("errortest11");
             try
             {
                 // 调用 StoreImage 工具类保存图片，指定 API 类型为 "productDetails"
                 var imageUrl = await StoreImage.SaveImageAsync(file, "productDetails");
 
-                Console.Write("errortest15");
                 // 返回成功响应，并将文件路径返回给前端
                 return Ok(new { url = imageUrl });
             }
             catch (ArgumentException argEx)
             {
                 // 处理文件为空或无效的情况
-                Console.Write("errortest12");
                 return BadRequest(argEx.Message);
             }
             catch (Exception ex)
             {
                 // 处理可能发生的异常
-                Console.Write("errortest16");
                 return StatusCode(500, $"文件上传失败: {ex.Message}");
             }
         }
@@ -120,28 +107,95 @@ namespace UniTrade.Controllers.User
         [HttpPost("sendCover")]
         public async Task<IActionResult> SendProductCover(IFormFile file)
         {
-            Console.Write("errortest11");
             try
             {
                 // 调用 StoreImage 工具类保存图片，指定 API 类型为 "cover"
                 var imageUrl = await StoreImage.SaveImageAsync(file, "cover");
 
-                Console.Write("errortest15");
                 // 返回成功响应，并将文件路径返回给前端
                 return Ok(new { url = imageUrl });
             }
             catch (ArgumentException argEx)
             {
                 // 处理文件为空或无效的情况
-                Console.Write("errortest12");
                 return BadRequest(argEx.Message);
             }
             catch (Exception ex)
             {
                 // 处理可能发生的异常
-                Console.Write("errortest16");
                 return StatusCode(500, $"文件上传失败: {ex.Message}");
             }
         }
+
+        //获取某用户所发布商品信息的api
+        [Authorize]
+        [HttpGet("getUserProducts")]
+        public async Task<IActionResult> GetUserProducts()
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                //获取当前用户ID
+                var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
+                //验证用户是否存在
+                var seller = db.Queryable<USERS>()
+                    .Where(u => u.USER_ID == userId)
+                    .First();
+                if (seller == null)
+                {
+                    return Unauthorized("用户不存在");
+                }
+                // 获取用户发布的商品ID
+                var merchandiseIds = db.Queryable<SELLS>()
+                    .Where(s => s.SELLER_ID == userId)
+                    .Select(s => s.MERCHANDISE_ID)
+                    .ToList();
+                // 获取商品信息
+                var products = db.Queryable<MERCHANDISES>()
+                    .Where(m => merchandiseIds.Contains(m.MERCHANDISE_ID))
+                    .Select(product => new
+                    {
+                        product.MERCHANDISE_ID,
+                        product.MERCHANDISE_NAME,
+                        product.PRICE,
+                        product.INVENTORY,
+                        product.MERCHANDISE_TYPE,
+                        product.COVER_PICTURE_PATH,
+                        product.DETAILS
+                    })
+                    .ToList();
+
+                // 从 ORDERS 表中统计每个商品的销量
+                var salesData = db.Queryable<ORDERS>()
+                    .Where(o => merchandiseIds.Contains(o.MERCHANDISE_ID))
+                    .GroupBy(o => o.MERCHANDISE_ID)
+                    .Select(o => new
+                    {
+                        MerchandiseId = o.MERCHANDISE_ID,
+                        Sales = SqlFunc.AggregateSum(o.ORDER_QUANITY) // 使用聚合函数计算销量总和
+                    })
+                    .ToList();
+
+                // 合并销量数据到商品信息中
+                var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
+                    product.MERCHANDISE_ID, // 这里的命名应与类的属性一致
+                    product.MERCHANDISE_NAME,
+                    product.PRICE,
+                    product.INVENTORY,
+                    product.MERCHANDISE_TYPE,
+                    product.COVER_PICTURE_PATH,
+                    product.DETAILS,
+                    salesData.FirstOrDefault(s => s.MerchandiseId == product.MERCHANDISE_ID)?.Sales ?? 0
+                )).ToList();
+
+                // 返回商品信息
+                return Ok(productsWithSales);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 }
