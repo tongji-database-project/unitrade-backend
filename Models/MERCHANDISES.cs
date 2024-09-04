@@ -53,7 +53,14 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public string PICTURE_PATH {get;set;}
+           public string COVER_PICTURE_PATH {get;set;}
+
+           /// <summary>
+           /// Desc:商品详细信息
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string DETAILS {get;set;}
 
     }
 }
