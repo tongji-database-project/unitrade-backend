@@ -9,9 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.7.1.1" />
+    <PackageReference Include="AlipaySDKNet.Standard" Version="4.9.258" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+    <PackageReference Include="MimeKit" Version="4.7.1" />
     <PackageReference Include="SqlSugarCore" Version="5.1.4.160" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="TencentCloudSDK.Common" Version="3.0.1080" />
+    <PackageReference Include="TencentCloudSDK.Sms" Version="3.0.1080" />
   </ItemGroup>
 
 </Project>

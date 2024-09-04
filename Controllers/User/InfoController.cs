@@ -23,10 +23,28 @@ namespace UniTrade.Controllers.User
 
             // 根据 user_id 查询用户信息
             var userInfo = await db.Queryable<USERS>()
-                .Where(it => it.USER_ID == userIdClaim)
+                .Where(it => it.USER_ID == "1")
                 .FirstAsync();
 
             return Ok(new UserInfo(userInfo));
+        }
+
+        [HttpGet("others/{id}")]
+        public async Task<ActionResult<UserInfo>> GetOthersInfo(string id)
+        {
+            SqlSugarClient db = Database.GetInstance();
+
+            var userInfo = await db.Queryable<USERS>()
+                .Where(it => it.USER_ID == id)
+                .FirstAsync();
+
+            if (userInfo == null)
+            {
+                Console.WriteLine($"找不到用户{id}");
+                return NotFound("用户不存在");
+            } else {
+                return Ok(new UserInfo(userInfo));
+            }
         }
     }
 }

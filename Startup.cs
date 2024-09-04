@@ -4,6 +4,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using UniTrade.Tools;
+using UniTrade.ViewModels;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace UniTrade
 {
@@ -37,29 +39,29 @@ namespace UniTrade
             //         })
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
-                    {
-                    var secrectByte = Encoding.UTF8.GetBytes(TokenParameter.SecretKey);
+            {
+                var secrectByte = Encoding.UTF8.GetBytes(TokenParameter.SecretKey);
 
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                    // 验证 token 颁发者
-                    ValidateIssuer = true,
-                    ValidIssuer = TokenParameter.Issuer,
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                // 验证 token 颁发者
+                ValidateIssuer = true,
+                ValidIssuer = TokenParameter.Issuer,
 
-                    // 验证接收者
-                    ValidateAudience = true,
-                    ValidAudience = TokenParameter.Audience,
+                // 验证接收者
+                ValidateAudience = true,
+                ValidAudience = TokenParameter.Audience,
 
-                    // 对签名的 SecurityToken 的 SecurityKey 进行验证
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secrectByte),
+                // 对签名的 SecurityToken 的 SecurityKey 进行验证
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(secrectByte),
 
-                    // 验证失效时间
-                    ValidateLifetime = true,
-                    };
-                    });
+                // 验证失效时间
+                ValidateLifetime = true,
+                };
+            });
 
             // 添加控制器
             services.AddControllers();
@@ -82,8 +84,9 @@ namespace UniTrade
                 options.IncludeXmlComments(xmlPath);
             });
 
-            // 配置 HttpClient 和 PayHelper 的依赖注入
-            services.AddHttpClient<PayHelper>();
+            // 配置依赖注入
+
+
         }
 
         // 该方法会被运行时调用，用于配置 HTTP 请求管道
