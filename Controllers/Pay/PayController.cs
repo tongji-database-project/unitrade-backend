@@ -8,11 +8,6 @@ using Aop.Api;
 using Aop.Api.Request;
 using Aop.Api.Domain;
 using Aop.Api.Response;
-//using Aop.Api.Domain;
-//using Aop.Api.Request;
-//using Aop.Api;
-//using System.Runtime.InteropServices;
-//using Aop.Api.Response;
 
 namespace UniTrade.Controllers.Pay
 {
@@ -63,10 +58,12 @@ namespace UniTrade.Controllers.Pay
 
             try
             {
+                // 创建支付宝客户端实例
                 IAopClient client = new DefaultAopClient(
                     _gatewayUrl, _appId, _merchantPrivateKey,
                     "json", "1.0", _signType, _alipayPublicKey, _charset, false);
 
+                // 构造支付请求对象
                 AlipayOpenPublicTemplateMessageIndustryModifyRequest request = new AlipayOpenPublicTemplateMessageIndustryModifyRequest();
 
                 var model = new AlipayTradeWapPayModel
@@ -125,7 +122,7 @@ namespace UniTrade.Controllers.Pay
                 //{
                 //    return StatusCode(500, "创建支付请求失败");
                 //}
-                return Ok();
+                //return Ok();
             }
             catch (Exception ex)
             {
