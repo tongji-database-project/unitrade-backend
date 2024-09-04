@@ -14,6 +14,7 @@ namespace UniTrade.Controllers
     {
         // GET: /test
         [HttpGet]
+
         public async Task<ActionResult<IEnumerable<TestDemoModel>>> GetAdministrator()
         {
             SqlSugarClient db = Database.GetInstance();
