@@ -81,6 +81,9 @@ namespace UniTrade
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);
             });
+
+            // 配置 HttpClient 和 PayHelper 的依赖注入
+            services.AddHttpClient<PayHelper>();
         }
 
         // 该方法会被运行时调用，用于配置 HTTP 请求管道
@@ -114,6 +117,8 @@ namespace UniTrade
                 endpoints.MapControllers();
             });
         }
+
     }
+
 }
 // vim: set sw=4:
