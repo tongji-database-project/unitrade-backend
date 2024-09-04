@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,35 +11,30 @@ using System.Text;
 using System.Threading.Tasks;
 using TencentCloud.Common;
 using TencentCloud.Common.Profile;
-using TencentCloud.Sms.V20210111;
-using TencentCloud.Sms.V20210111.Models;
+using TencentCloud.Sms.V20190711;
+using TencentCloud.Sms.V20190711.Models;
 
 namespace UniTrade.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class CellphoneCodeController : Controller
     {
-        [HttpPost("{phone_type}")]
-        public async Task<IActionResult> SendCellphoneCode(string phone_type)
+        [HttpPost]
+        public async Task<IActionResult> SendCellphoneCode([FromQuery] string phone, [FromQuery] string type)
         {
-            // 分割参数
-            string[] para = phone_type.Split('&');
-            if (para.Length < 2)
+            if (string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(type))
             {
-                return BadRequest("无效的 phone_type 参数");
+                return BadRequest("手机号或请求类型为空");
             }
-
-            string phone = para[0];
-            string type = para[1];
 
             try
             {
                 // 安全地获取凭证
                 Credential cred = new()
                 {
-                    SecretId = Environment.GetEnvironmentVariable("TENCENT_CLOUD_SECRET_ID"),
-                    SecretKey = Environment.GetEnvironmentVariable("TENCENT_CLOUD_SECRET_KEY")
+                    SecretId = "AKIDRgmVDkKoBRacfZL3e3DF5lCh4DHCvQuK",
+                    SecretKey = "SlCe2WrzBHH4d3GF0XyrfIiz2TikX6Rf"
                 };
 
                 ClientProfile clientProfile = new()
@@ -47,28 +43,32 @@ namespace UniTrade.Controllers
                     HttpProfile = new HttpProfile
                     {
                         ReqMethod = "POST",
-                        Timeout = 10,
                         Endpoint = "sms.tencentcloudapi.com",
-                        WebProxy = Environment.GetEnvironmentVariable("HTTPS_PROXY")
+                        WebProxy = Environment.GetEnvironmentVariable("HTTPS_PROXY"),
+                        Timeout = 5,
                     }
                 };
 
-                SmsClient client = new(cred, "ap-guangzhou", clientProfile);
+                SmsClient client = new(cred, "ap-shanghai", clientProfile);
 
                 Random random = new();
                 string Vericode = random.Next(100000, 999999).ToString();
 
+                string Template_id = string.Empty;
                 // 根据类型设置相应的验证码
                 switch (type)
                 {
                     case "register":
                         EmailController.RegVeriCode = Vericode;
+                        Template_id = "2256384";
                         break;
                     case "findpwd":
                         EmailController.FinVeriCode = Vericode;
+                        Template_id = "2256389";
                         break;
                     case "login":
                         EmailController.LogVeriCode = Vericode;
+                        Template_id = "2256382";
                         break;
                     default:
                         return BadRequest("无效的 type 参数");
@@ -76,20 +76,22 @@ namespace UniTrade.Controllers
 
                 SendSmsRequest req = new()
                 {
-                    SmsSdkAppId = Environment.GetEnvironmentVariable("TENCENT_SMS_APP_ID"),
-                    SignName = "校易购平台",
+                    SmsSdkAppid = "1400933429",
+                    Sign = "TJ校易购公众号",
                     PhoneNumberSet = new string[] { "+86" + phone },
-                    TemplateId = Environment.GetEnvironmentVariable("TENCENT_SMS_TEMPLATE_ID"),
+                    TemplateID = Template_id,
                     TemplateParamSet = new string[] { Vericode }
                 };
 
-                SendSmsResponse resp = await client.SendSms(req);
-                // 根据需要处理响应
+                SendSmsResponse resp =  client.SendSmsSync(req);
 
                 return Ok("验证码已成功发送。");
             }
             catch (Exception ex)
             {
+                // 打印详细的异常信息
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 // 记录异常用于调试
                 return StatusCode(500, $"内部服务器错误：{ex.Message}");
             }
