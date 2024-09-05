@@ -6,10 +6,13 @@ using UniTrade.Tools;
 using UniTrade.Models;
 using SqlSugar;
 using UniTrade.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace UniTrade.Controllers.Cart
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class CartController : ControllerBase
     {
@@ -21,9 +24,11 @@ namespace UniTrade.Controllers.Cart
         }
 
         // 获取购物车列表
-        [HttpGet("{customer_id}")]
-        public ActionResult<IEnumerable<CartItemViewModel>> GetCartItems(string customer_id)
+        [HttpGet]
+        public ActionResult<IEnumerable<CartItemViewModel>> GetCartItems()
         {
+            var customer_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
+
             try
             {
                 var items = _db.Queryable<CARTS, MERCHANDISES>((cart, merch) => new object[] {
@@ -32,7 +37,6 @@ namespace UniTrade.Controllers.Cart
                                .Where((cart, merch) => cart.CUSTOMER_ID == customer_id)
                                .Select((cart, merch) => new CartItemViewModel
                                {
-                                   customer_id = cart.CUSTOMER_ID,
                                    merchandise_id = cart.MERCHANDISE_ID,
                                    merchandise_name = merch.MERCHANDISE_NAME,
                                    merchandise_price = (double)merch.PRICE,
@@ -54,11 +58,13 @@ namespace UniTrade.Controllers.Cart
         [HttpPost]
         public ActionResult AddToCart([FromBody] CartItemViewModel cart_item)
         {
+            var customer_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
+
             try
             {
                 // 检查购物车中是否已经存在相同的商品
                 var existingItem = _db.Queryable<CARTS>()
-                                      .Where(c => c.CUSTOMER_ID == cart_item.customer_id && c.MERCHANDISE_ID == cart_item.merchandise_id)
+                                      .Where(c => c.CUSTOMER_ID == customer_id && c.MERCHANDISE_ID == cart_item.merchandise_id)
                                       .First();
 
                 if (existingItem != null)
@@ -66,7 +72,7 @@ namespace UniTrade.Controllers.Cart
                     // 如果商品已存在，则更新数量
                     existingItem.QUANITY += cart_item.quanity; // 例如，增加商品数量
                     _db.Updateable(existingItem)
-                        .Where(it => it.CUSTOMER_ID == cart_item.customer_id && it.MERCHANDISE_ID == cart_item.merchandise_id) // 添加更新条件
+                        .Where(it => it.CUSTOMER_ID == customer_id && it.MERCHANDISE_ID == cart_item.merchandise_id) // 添加更新条件
                         .ExecuteCommand();
                     return Ok("购物车已更新。");
                 }
@@ -75,7 +81,7 @@ namespace UniTrade.Controllers.Cart
                     // 如果商品不存在，则插入新记录
                     var newItem = new CARTS
                     {
-                        CUSTOMER_ID = cart_item.customer_id,
+                        CUSTOMER_ID = customer_id,
                         MERCHANDISE_ID = cart_item.merchandise_id,
                         QUANITY = cart_item.quanity,
                         CART_TIME = DateTime.Now // 假设添加到购物车时记录当前时间
@@ -92,11 +98,13 @@ namespace UniTrade.Controllers.Cart
         }
 
         // 从购物车删除商品
-        [HttpDelete("{customer_id}/{merchandise_id}")]
-        public ActionResult RemoveFromCart(string customer_id, string merchandise_id)
+        [HttpDelete("{merchandise_id}")]
+        public ActionResult RemoveFromCart(string merchandise_id)
         {
             try
             {
+                var customer_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
+
                 var item = _db.Queryable<CARTS>()
                               .Where(c => c.CUSTOMER_ID == customer_id && c.MERCHANDISE_ID == merchandise_id)
                               .First();
@@ -121,11 +129,12 @@ namespace UniTrade.Controllers.Cart
         [HttpPost("update")]
         public ActionResult UpdateCartItem([FromBody] CartItemViewModel cart_item_update)
         {
+            var customer_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
             try
             {
                 // 使用组合主键条件查询
                 var item = _db.Queryable<CARTS>()
-                              .Where(c => c.CUSTOMER_ID == cart_item_update.customer_id && c.MERCHANDISE_ID == cart_item_update.merchandise_id)
+                              .Where(c => c.CUSTOMER_ID == customer_id && c.MERCHANDISE_ID == cart_item_update.merchandise_id)
                               .First();
 
                 if (item != null)

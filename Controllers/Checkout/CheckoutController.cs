@@ -7,6 +7,7 @@ using UniTrade.ViewModels;
 using UniTrade.Tools;
 using System.Threading.Tasks;
 using SqlSugar;
+using System.Security.Claims;
 
 namespace UniTrade.Controllers.Checkout
 {
@@ -24,13 +25,15 @@ namespace UniTrade.Controllers.Checkout
         /// <summary>
         /// 获取订单结算信息，包括用户信息和购物车选中商品信息。
         /// </summary>
-        [HttpGet("{user_id}")]
-        public async Task<ActionResult<OrderSummaryViewModel>> GetCheckoutSummary(string user_id)
+        [HttpGet]
+        public async Task<ActionResult<OrderSummaryViewModel>> GetCheckoutSummary()
         {
             var order_summary = new OrderSummaryViewModel()
             {
                 CartItems = new List<CartItemViewModel>() // 确保CartItems初始化为非空列表
             };
+
+            var user_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
 
             try
             {
@@ -55,7 +58,6 @@ namespace UniTrade.Controllers.Checkout
                                                  .Where((c, m) => c.CUSTOMER_ID == user_id)
                                                  .Select((c, m) => new CartItemViewModel
                                                  {
-                                                     customer_id = c.CUSTOMER_ID,
                                                      merchandise_id = c.MERCHANDISE_ID,
                                                      merchandise_name = m.MERCHANDISE_NAME,
                                                      merchandise_price = (double)m.PRICE,
