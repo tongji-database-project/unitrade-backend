@@ -197,5 +197,104 @@ namespace UniTrade.Controllers.User
             }
         }
 
+
+        //更改发布商品信息的api
+        [Authorize]
+        [HttpPost("modify")]
+        public async Task<IActionResult> ModifyProduct([FromBody] ProductIDViewModel model)
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                //获取当前用户ID
+                var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
+                //验证用户是否存在
+                var seller = db.Queryable<USERS>()
+                    .Where(u => u.USER_ID == userId)
+                    .First();
+                if (seller == null)
+                {
+                    return Unauthorized("用户不存在");
+                }
+
+                var productID = model.ProductID;
+
+                //获取商品的详细信息
+                var theProduct = db.Queryable<MERCHANDISES>()
+                    .Where(u => u.MERCHANDISE_ID == productID)
+                    .First();
+
+                if (theProduct == null)
+                {
+                    return NotFound("商品不存在");
+                }
+
+                //获取商品的详细图片信息
+                var thePictures = db.Queryable<MERCHANDISES_PICTURE>()
+                    .Where(m => m.MERCHANDISE_ID == productID)
+                    .Select(m => m.PICTURE_PATH)
+                    .ToList();
+
+                var products = new PublishProductViewModel
+                {
+                    name = theProduct.MERCHANDISE_NAME,
+                    price = theProduct.PRICE,
+                    inventory = theProduct.INVENTORY,
+                    type = theProduct.MERCHANDISE_TYPE,
+                    cover_image_url = theProduct.COVER_PICTURE_PATH,
+                    product_image_urls = thePictures,
+                    product_details = theProduct.DETAILS
+                };
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+        //取消发布商品的api
+        [Authorize]
+        [HttpPost("cancel")]
+        public async Task<IActionResult> CancelProduct([FromBody] ProductIDViewModel model)
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                //获取当前用户ID
+                var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
+                //验证用户是否存在
+                var seller = db.Queryable<USERS>()
+                    .Where(u => u.USER_ID == userId)
+                    .First();
+                if (seller == null)
+                {
+                    return Unauthorized("用户不存在");
+                }
+
+                var productID = model.ProductID;
+
+                //删除MERCHANDISES表中的该商品的信息
+                db.Deleteable<MERCHANDISES>()
+                    .Where(d => d.MERCHANDISE_ID == productID)
+                    .ExecuteCommand();
+                //删除MERCHANDISES_PICTURE表中该商品的信息
+                db.Deleteable<MERCHANDISES_PICTURE>()
+                    .Where(t => t.MERCHANDISE_ID == productID)
+                    .ExecuteCommand();
+                //删除SELLS表中该商品的信息
+                db.Deleteable<SELLS>()
+                    .Where(s => s.MERCHANDISE_ID == productID)
+                    .ExecuteCommand();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }
