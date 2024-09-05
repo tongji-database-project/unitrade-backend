@@ -26,18 +26,17 @@ namespace UniTrade.Controllers.Cart
         {
             try
             {
-                var items = _db.Queryable<CARTS, MERCHANDISES, MERCHANDISES_PICTURE>((cart, merch, pic) => new object[] {
-                                    JoinType.Inner, cart.MERCHANDISE_ID == merch.MERCHANDISE_ID,
-                                    JoinType.Left, merch.MERCHANDISE_ID == pic.MERCHANDISE_ID
+                var items = _db.Queryable<CARTS, MERCHANDISES>((cart, merch) => new object[] {
+                                    JoinType.Inner, cart.MERCHANDISE_ID == merch.MERCHANDISE_ID
                                 })
-                               .Where((cart, merch, pic) => cart.CUSTOMER_ID == customer_id)
-                               .Select((cart, merch, pic) => new CartItemViewModel
+                               .Where((cart, merch) => cart.CUSTOMER_ID == customer_id)
+                               .Select((cart, merch) => new CartItemViewModel
                                {
                                    customer_id = cart.CUSTOMER_ID,
                                    merchandise_id = cart.MERCHANDISE_ID,
                                    merchandise_name = merch.MERCHANDISE_NAME,
                                    merchandise_price = (double)merch.PRICE,
-                                   picture = pic.PICTURE_PATH,
+                                   picture = merch.COVER_PICTURE_PATH,
                                    quanity = (int)cart.QUANITY,
                                    cart_time = cart.CART_TIME,
                                    selected = true // 假设所有商品默认被选中，可以根据实际业务逻辑进行调整
@@ -57,16 +56,34 @@ namespace UniTrade.Controllers.Cart
         {
             try
             {
-                var newItem = new CARTS
-                {
-                    CUSTOMER_ID = cart_item.customer_id,
-                    MERCHANDISE_ID = cart_item.merchandise_id,
-                    QUANITY = cart_item.quanity,
-                    CART_TIME = DateTime.Now // 假设添加到购物车时记录当前时间
-                };
+                // 检查购物车中是否已经存在相同的商品
+                var existingItem = _db.Queryable<CARTS>()
+                                      .Where(c => c.CUSTOMER_ID == cart_item.customer_id && c.MERCHANDISE_ID == cart_item.merchandise_id)
+                                      .First();
 
-                _db.Insertable(newItem).ExecuteCommand();
-                return Ok("已成功添加到购物车。");
+                if (existingItem != null)
+                {
+                    // 如果商品已存在，则更新数量
+                    existingItem.QUANITY += cart_item.quanity; // 例如，增加商品数量
+                    _db.Updateable(existingItem)
+                        .Where(it => it.CUSTOMER_ID == cart_item.customer_id && it.MERCHANDISE_ID == cart_item.merchandise_id) // 添加更新条件
+                        .ExecuteCommand();
+                    return Ok("购物车已更新。");
+                }
+                else
+                {
+                    // 如果商品不存在，则插入新记录
+                    var newItem = new CARTS
+                    {
+                        CUSTOMER_ID = cart_item.customer_id,
+                        MERCHANDISE_ID = cart_item.merchandise_id,
+                        QUANITY = cart_item.quanity,
+                        CART_TIME = DateTime.Now // 假设添加到购物车时记录当前时间
+                    };
+
+                    _db.Insertable(newItem).ExecuteCommand();
+                    return Ok("已成功添加到购物车。");
+                }
             }
             catch (Exception ex)
             {
@@ -106,19 +123,25 @@ namespace UniTrade.Controllers.Cart
         {
             try
             {
+                // 使用组合主键条件查询
                 var item = _db.Queryable<CARTS>()
                               .Where(c => c.CUSTOMER_ID == cart_item_update.customer_id && c.MERCHANDISE_ID == cart_item_update.merchandise_id)
                               .First();
 
                 if (item != null)
                 {
+                    // 更新商品数量
                     item.QUANITY = cart_item_update.quanity;
                     // 更新其他可能的字段（如选中状态等）
 
-                    _db.Updateable(item).ExecuteCommand();
+                    // 使用组合主键条件更新
+                    _db.Updateable(item)
+                       .Where(c => c.CUSTOMER_ID == item.CUSTOMER_ID && c.MERCHANDISE_ID == item.MERCHANDISE_ID)
+                       .ExecuteCommand();
 
                     return Ok("购物车项目更新成功。");
                 }
+
                 return NotFound("未找到购物车物品。");
             }
             catch (Exception ex)
