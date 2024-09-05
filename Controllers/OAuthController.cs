@@ -131,7 +131,7 @@ namespace UniTrade.Controllers
                 var Token = JwtService.GenerateAccessToken(user_id, "User");
                 var response = new
                 {
-                    token = Token,
+                    access_token = Token,
                     id = user_id
                 };
                 return Ok(response);
@@ -149,8 +149,7 @@ namespace UniTrade.Controllers
         public IActionResult CancelAccount([FromBody] CancelInfoViewModel request)
         {
             SqlSugarClient db = Database.GetInstance();
-
-            var result = db.Ado.UseTran(() =>
+            try
             {
                 var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
                 var user = db.Queryable<USERS>()
@@ -159,7 +158,7 @@ namespace UniTrade.Controllers
 
                 if (user == null)
                 {
-                    throw new Exception("账号不存在");
+                    return Unauthorized("用户不存在");
                 }
 
                 // 验证密码是否正确（数据库中的密码是加密后的）
@@ -170,7 +169,7 @@ namespace UniTrade.Controllers
                         );
                 if (passwordVerification != PasswordVerificationResult.Success)
                 {
-                    throw new Exception("密码错误，注销失败");
+                    return BadRequest("密码错误，注销失败");
                 }
 
                 // 获取该用户的所有发售商品
@@ -196,15 +195,12 @@ namespace UniTrade.Controllers
                 db.Deleteable<USERS>()
                      .In(user)
                      .ExecuteCommand();
-            });
 
-            if (result.IsSuccess)
-            {
-                return Ok();
+                return Ok("账号注销成功");
             }
-            else
+            catch (Exception ex)
             {
-                return StatusCode(500, $"服务器内部错误: {result.ErrorMessage}");
+                return StatusCode(500, $"服务器内部错误: {ex.Message}");
             }
         }
 

@@ -45,7 +45,7 @@ namespace UniTrade.Controllers
                         ReqMethod = "POST",
                         Endpoint = "sms.tencentcloudapi.com",
                         WebProxy = Environment.GetEnvironmentVariable("HTTPS_PROXY"),
-                        Timeout = 5,
+                        Timeout = 60,
                     }
                 };
 
