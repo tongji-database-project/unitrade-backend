@@ -36,7 +36,7 @@ namespace UniTrade.Controllers.User
                     {
                         seller_name = u2.NAME,
                         complation_reason=c.COMPLAINT_REASON,
-                        complation_time= ((DateTime)c.COMPLAINT_TIME).ToString("o"),
+                        complation_time= c.COMPLAINT_TIME,
                         complation_state=c.COMPLAINT_STATE,
                     })
                     .ToList();

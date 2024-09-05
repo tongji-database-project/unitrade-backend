@@ -37,7 +37,7 @@ namespace UniTrade.Controllers.User
                     {
                         user_name=buyer.NAME,
                         complation_reason=c.COMPLAINT_REASON,
-                        appeal_time=((DateTime)a.APPEAL_TIME).ToString("o"),
+                        appeal_time= a.APPEAL_TIME,
                         appeal_reason=a.APPEAL_REASON,
                         appeal_state=a.APPEAL_STATE,
                     })

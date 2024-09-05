@@ -39,7 +39,7 @@ namespace UniTrade.Controllers.User
                         order_id = ro.ORDER_ID,
                         merchandise_name = m.MERCHANDISE_NAME,
                         refund_reason = r.REFUND_REASON,
-                        refund_time = ((DateTime)r.REFUND_TIME).ToString("o"),
+                        refund_time = r.REFUND_TIME,
                         refund_state = r.REFUND_STATE
                     })
                     .ToList();

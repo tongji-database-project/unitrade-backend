@@ -53,28 +53,23 @@ namespace UniTrade.Controllers
         [HttpPost("audit")]
         public IActionResult AuditRefunds([FromBody] AuditRefundInfo result)
         {
+            
             SqlSugarClient db = Database.GetInstance();
             try
             {
                 var refund = db.Queryable<REFUNDS>()
                 .Where(r => r.REFUND_ID == result.refund_id && r.REFUND_STATE == "Pen")
                 .First();
-
                 if (refund == null)
                 {
                     return NotFound("Refund not found or already completed.");
                 }
                 else
                 {
-                    if(result.is_agreed == true)
-                    {
-                        refund.REFUND_STATE = "Agr";
-                    }
-                    else
-                    {
-                        refund.REFUND_STATE = "Dis";
-                    }
-                    db.Updateable(refund).ExecuteCommand();
+                    db.Updateable<REFUNDS>()
+                            .Where(r => r.REFUND_ID == result.refund_id)
+                            .SetColumns(r => new REFUNDS { REFUND_STATE = (result.is_agreed?"Agr":"Dis") })
+                            .ExecuteCommand();
                     return Ok("Refund completed successfully.");
                 }
             }

@@ -37,7 +37,7 @@ namespace UniTrade.Controllers.User
                         complation_id = c.COMPLAINT_ID,
                         user_name = u1.NAME,
                         complation_reason = c.COMPLAINT_REASON,
-                        complation_time = ((DateTime)c.COMPLAINT_TIME).ToString("o"),
+                        complation_time = c.COMPLAINT_TIME,
                         have_appealed=false
                     })
                     .ToList();
