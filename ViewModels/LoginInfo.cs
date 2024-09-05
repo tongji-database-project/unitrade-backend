@@ -23,14 +23,6 @@ namespace UniTrade.ViewModels
         public string Email { get; set; } //” œ‰
         public string VerificationCode { get; set; }
     }
-    public class RefreshTokenViewModel
-    {
-        public string RefreshToken { get; set; }
-    }
-    public class LogoutViewModel
-    {
-        public string RefreshToken { get; set; }
-    }
     public class AdminLoginInfoViewModel
     {
         public string name { get; set; }
