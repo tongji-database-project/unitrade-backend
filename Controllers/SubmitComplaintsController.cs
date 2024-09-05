@@ -12,6 +12,7 @@ namespace UniTrade.Controllers
     public class SubmitComplaintsController : ControllerBase
     {
         // 提交投诉
+        [Authorize]
         [HttpPost("submit")]
         public IActionResult SubmitComplaint([FromBody] ComplaintRequest request)
         {
