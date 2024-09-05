@@ -16,37 +16,38 @@ namespace UniTrade.Tools
             }
 
             // 根据API类型设置保存路径
-            string directoryPath;
+            string relativePath;
             switch (apiType)
             {
                 case "cover":
-                    directoryPath = @"C:\data\images\cover";
+                    relativePath = @"cover";
                     break;
                 case "productDetails":
-                    directoryPath = @"C:\data\images\productDetails";
+                    relativePath = @"productDetails";
                     break;
                 default:
-                    directoryPath = @"C:\data\images\others";
+                    relativePath = @"others";
                     break;
             }
 
             // 确保目录存在
-            if (!Directory.Exists(directoryPath))
+            var absolutePath = Path.Combine(@"C:\data\images\", relativePath);
+            if (!Directory.Exists(absolutePath))
             {
-                Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(absolutePath);
             }
 
             // 生成文件名并保存文件
             var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var filePath = Path.Combine(directoryPath, fileName);
+            var filePath = Path.Combine(relativePath, fileName);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = new FileStream(Path.Combine(absolutePath, fileName), FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
             // 返回相对URL
-            return $"/uploads/{fileName}";
+            return filePath;
         }
     }
 }
