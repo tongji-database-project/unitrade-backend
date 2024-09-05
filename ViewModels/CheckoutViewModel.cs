@@ -4,7 +4,7 @@ namespace UniTrade.ViewModels
 {
     public class OrderSummaryViewModel
     {
-        public string ueser_name { get; set; } // 用户名
+        public string user_name { get; set; } // 用户名
         public string phone { get; set; } // 联系电话
         public string address { get; set; } // 收货地址
         public List<CartItemViewModel> CartItems { get; set; } // 购物车选中商品列表

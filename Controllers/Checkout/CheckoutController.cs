@@ -34,7 +34,7 @@ namespace UniTrade.Controllers.Checkout
 
             try
             {
-                Console.WriteLine($"开始获取用户信息，用户ID: {user_id}");
+                // Console.WriteLine($"开始获取用户信息，用户ID: {user_id}");
                 // 获取用户信息
                 var user = await _db.Queryable<USERS>()
                                    .Where(u => u.USER_ID == user_id)
@@ -45,11 +45,11 @@ namespace UniTrade.Controllers.Checkout
                     return NotFound("用户不存在");
                 }
 
-                order_summary.ueser_name = user.NAME;
+                order_summary.user_name = user.NAME;
                 order_summary.phone = user.PHONE;
                 order_summary.address = user.ADDRESS;
 
-                Console.WriteLine("开始获取购物车选中商品信息...");
+                // Console.WriteLine("开始获取购物车选中商品信息...");
                 // 获取购物车选中商品信息
                 order_summary.CartItems = await _db.Queryable<CARTS, MERCHANDISES>((c, m) => c.MERCHANDISE_ID == m.MERCHANDISE_ID)
                                                  .Where((c, m) => c.CUSTOMER_ID == user_id)
@@ -79,13 +79,13 @@ namespace UniTrade.Controllers.Checkout
                 order_summary.shipping_fee = 10.0m; // 示例固定运费
                 order_summary.grand_total = order_summary.total_price + order_summary.shipping_fee;
 
-                Console.WriteLine($"总价计算完成，总价: {order_summary.total_price}, 运费: {order_summary.shipping_fee}");
+                // Console.WriteLine($"总价计算完成，总价: {order_summary.total_price}, 运费: {order_summary.shipping_fee}");
 
                 return Ok(order_summary);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"服务器错误：{ex.Message}");
+                // Console.WriteLine($"服务器错误：{ex.Message}");
                 return StatusCode(500, $"服务器错误：{ex.Message}");
             }
         }
@@ -102,6 +102,8 @@ namespace UniTrade.Controllers.Checkout
                 return BadRequest("无效的订单数据");
             }
 
+            List<string> orderIds = new List<string>();
+
             // 使用 SqlSugar 事务
             var result = await _db.Ado.UseTranAsync(async () =>
             {
@@ -112,18 +114,19 @@ namespace UniTrade.Controllers.Checkout
                     {
                         ORDER_ID = orderId,
                         MERCHANDISE_ID = item.merchandise_id,
-                        STATE = "WAI", // 初始状态为待发货
+                        STATE = "UNP", // 初始状态为未支付
                         ORDER_QUANITY = item.quanity,
                         ORDER_TIME = DateTime.UtcNow
                     };
 
                     await _db.Insertable(order).ExecuteCommandAsync();
+                    orderIds.Add(orderId);
                 }
             });
 
             if (result.IsSuccess)
             {
-                return Ok("订单创建成功");
+                return Ok(orderIds);
             }
             else
             {
