@@ -109,16 +109,16 @@ namespace UniTrade.Controllers.Checkout
             // 使用 SqlSugar 事务
             var result = await _db.Ado.UseTranAsync(async () =>
             {
+                var orderId = Guid.NewGuid().ToString(); // 生成随机的订单id
                 foreach (var item in order_summary.CartItems.Where(x => x.selected && x.quanity > 0))
                 {
-                    var orderId = Guid.NewGuid().ToString();
                     var order = new ORDERS
                     {
                         ORDER_ID = orderId,
                         MERCHANDISE_ID = item.merchandise_id,
                         STATE = "UNP", // 初始状态为未支付
                         ORDER_QUANITY = item.quanity,
-                        ORDER_TIME = DateTime.UtcNow
+                        ORDER_TIME = DateTime.Now
                     };
 
                     await _db.Insertable(order).ExecuteCommandAsync();

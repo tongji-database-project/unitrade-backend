@@ -170,5 +170,36 @@ namespace UniTrade.Controllers.Pay
             // 处理支付宝支付后的异步通知
             return Ok();
         }
+
+
+        /// <summary>
+        /// 根据订单号获取订单的总金额。
+        /// </summary>
+        /// <param name="order_id">订单号</param>
+        /// <returns>订单的总金额</returns>
+        [HttpGet("get-order-total")]
+        public async Task<ActionResult<decimal>> GetOrderTotal(string order_id)
+        {
+            try
+            {
+                // 使用联接查询ORDERS表和MERCHANDISES表
+                var totalAmount = await _db.Queryable<ORDERS, MERCHANDISES>((o, m) => new JoinQueryInfos(
+                                            JoinType.Inner, o.MERCHANDISE_ID == m.MERCHANDISE_ID))
+                                           .Where(o => o.ORDER_ID == order_id)
+                                           .SumAsync((o, m) => o.ORDER_QUANITY * m.PRICE);
+
+                // 如果订单不存在
+                if (totalAmount == null)
+                {
+                    return NotFound("订单不存在或订单中没有商品");
+                }
+
+                return Ok(totalAmount);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"服务器错误：{ex.Message}");
+            }
+        }
     }
 }
