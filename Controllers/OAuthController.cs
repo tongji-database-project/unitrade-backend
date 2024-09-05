@@ -155,7 +155,6 @@ namespace UniTrade.Controllers
                 var user = db.Queryable<USERS>()
                     .Where(c => c.USER_ID == userId)
                     .First();
-
                 if (user == null)
                 {
                     return Unauthorized("用户不存在");
@@ -175,16 +174,13 @@ namespace UniTrade.Controllers
                 var sells = db.Queryable<SELLS>()
                     .Where(s => s.SELLER_ID == user.USER_ID)
                     .ToList();
-
                 if (sells.Count > 0)
                 {
                     var merchandiseIds = sells.Select(s => s.MERCHANDISE_ID).ToList();
-
                     // 删除发售商品
                     db.Deleteable<MERCHANDISES>()
                         .In(merchandiseIds)
                         .ExecuteCommand();
-
                     // 删除商品相关的图片
                     db.Deleteable<MERCHANDISES_PICTURE>()
                         .Where(p => merchandiseIds.Contains(p.MERCHANDISE_ID))
@@ -192,9 +188,8 @@ namespace UniTrade.Controllers
                 }
 
                 db.Deleteable<USERS>()
-                     .In(user)
+                     .Where(u=>u.USER_ID==userId)
                      .ExecuteCommand();
-
                 return Ok("账号注销成功");
             }
             catch (Exception ex)
