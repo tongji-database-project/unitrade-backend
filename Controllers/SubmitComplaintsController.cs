@@ -4,6 +4,11 @@ using SqlSugar;
 using System;
 using System.Security.Claims;
 using UniTrade.Tools;
+using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Security.Principal;
+using System.Threading.Tasks;
+using UniTrade.ViewModels;
 
 namespace UniTrade.Controllers
 {
