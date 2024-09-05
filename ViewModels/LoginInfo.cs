@@ -23,6 +23,10 @@ namespace UniTrade.ViewModels
         public string Email { get; set; } //” œ‰
         public string VerificationCode { get; set; }
     }
+    public class CancelInfoViewModel
+    {
+        public string password { get; set; }
+    }
     public class AdminLoginInfoViewModel
     {
         public string name { get; set; }

@@ -13,6 +13,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Org.BouncyCastle.Utilities.Encoders;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System.Xml.Linq;
 
 namespace UniTrade.Controllers
 {
@@ -126,21 +128,10 @@ namespace UniTrade.Controllers
 
                 // 密码或验证码正确则生成 token 并返回
                 string user_id = user.USER_ID;
-                var accessToken = JwtService.GenerateAccessToken(user_id, "User");
-                //var refreshToken = JwtService.GenerateRefreshToken();
-                /*
-                // 将刷新令牌保存到 RefreshToken 表
-                db.Insertable(new RefreshToken
-                {
-                    Token = refreshToken,
-                    UserId = user_id,
-                    Expiration = DateTime.UtcNow.AddDays(7) // 设置刷新令牌的过期时间
-                }).ExecuteCommand();
-                */
+                var Token = JwtService.GenerateAccessToken(user_id, "User");
                 var response = new
                 {
-                    access_token = accessToken,
-                    //refresh_token = refreshToken,
+                    token = Token,
                     id = user_id
                 };
                 return Ok(response);
@@ -150,30 +141,74 @@ namespace UniTrade.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        /*
+
         /// <summary>
-        /// 登出
+        /// 注销
         /// </summary>
-        [HttpPost("logout")]
-        public IActionResult Logout([FromBody] LogoutViewModel request)
+        [HttpPost("cancel")]
+        public IActionResult CancelAccount([FromBody] CancelInfoViewModel request)
         {
             SqlSugarClient db = Database.GetInstance();
-            try
-            {
-                // 撤销当前的刷新令牌
-                db.Updateable<RefreshToken>()
-                    .SetColumns(rt => new RefreshToken { IsRevoked = true })
-                    .Where(rt => rt.Token == request.RefreshToken)
-                    .ExecuteCommand();
 
+            var result = db.Ado.UseTran(() =>
+            {
+                var userId = HttpContext.User.FindFirstValue(ClaimTypes.Name);
+                var user = db.Queryable<USERS>()
+                    .Where(c => c.USER_ID == userId)
+                    .First();
+
+                if (user == null)
+                {
+                    throw new Exception("账号不存在");
+                }
+
+                // 验证密码是否正确（数据库中的密码是加密后的）
+                var passwordVerification = passwordHasher.VerifyHashedPassword(
+                        new IdentityUser(),
+                        user.PASSWORD,
+                        request.password
+                        );
+                if (passwordVerification != PasswordVerificationResult.Success)
+                {
+                    throw new Exception("密码错误，注销失败");
+                }
+
+                // 获取该用户的所有发售商品
+                var sells = db.Queryable<SELLS>()
+                    .Where(s => s.SELLER_ID == user.USER_ID)
+                    .ToList();
+
+                if (sells.Count > 0)
+                {
+                    var merchandiseIds = sells.Select(s => s.MERCHANDISE_ID).ToList();
+
+                    // 删除发售商品
+                    db.Deleteable<MERCHANDISES>()
+                        .In(merchandiseIds)
+                        .ExecuteCommand();
+
+                    // 删除商品相关的图片
+                    db.Deleteable<MERCHANDISES_PICTURE>()
+                        .Where(p => merchandiseIds.Contains(p.MERCHANDISE_ID))
+                        .ExecuteCommand();
+                }
+
+                db.Deleteable<USERS>()
+                     .In(user)
+                     .ExecuteCommand();
+            });
+
+            if (result.IsSuccess)
+            {
                 return Ok();
             }
-            catch (Exception ex)
+            else
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, $"服务器内部错误: {result.ErrorMessage}");
             }
         }
-        */
+
+
         /// <summary>
         /// 注册
         /// </summary>
@@ -198,13 +233,15 @@ namespace UniTrade.Controllers
                     return Unauthorized("用户已存在");
                 }
 
-                int sum = db.Queryable<USERS>().Count() + 1;
-                //生成ID
-                string id = sum.ToString("D20");
+                // 生成时间戳唯一ID
+                string timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                Random random = new Random();
+                string randomDigits = random.Next(1000, 9999).ToString(); // 四位随机数
+                string uniqueId = timestamp + randomDigits; //时间戳加4位随机数组成最终id  例：202409051955000
 
                 USERS newuser = new USERS
                 {
-                    USER_ID = id,
+                    USER_ID = uniqueId,
                     AVATAR = " ",
                     NAME = request.name,
                     PASSWORD = passwordHasher.HashPassword(new IdentityUser(), request.password),
