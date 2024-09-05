@@ -18,8 +18,11 @@ namespace UniTrade.Controllers.User
             SqlSugarClient db = Database.GetInstance();
             try
             {
+                int sum = db.Queryable<APPEALS>().Count() + 1;
+                string id = sum.ToString("D20");
                 APPEALS newappeal = new APPEALS
                 {
+                    APPEAL_ID = id,
                     APPEAL_STATE = "Pen",
                     APPEAL_REASON = appealinfo.appeal_reason,
                     APPEAL_FEEDBACK = "",
