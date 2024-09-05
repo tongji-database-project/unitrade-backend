@@ -16,7 +16,7 @@ namespace UniTrade.Controllers.User
     [Route("setpicture")]
     public class EditAvatorController : ControllerBase 
     {
-        private readonly string _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "img/avator");  /*上传到服务器的路径*/
+        private readonly string _uploadPath = Path.Combine("C:/data/images");  /*上传到服务器的路径*/
 
 
         public EditAvatorController()

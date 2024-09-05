@@ -171,7 +171,6 @@ namespace UniTrade.Controllers
                 {
                     return BadRequest("密码错误，注销失败");
                 }
-
                 // 获取该用户的所有发售商品
                 var sells = db.Queryable<SELLS>()
                     .Where(s => s.SELLER_ID == user.USER_ID)
