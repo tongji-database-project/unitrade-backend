@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Linq;
+using System.Threading.Tasks;
 using SqlSugar;
 using UniTrade.Models;
 using UniTrade.Tools;
@@ -12,9 +16,9 @@ namespace UniTrade.Controllers.Merchandise
     public class CommentCardController : ControllerBase
     {
         [HttpGet("{commentId}")]
-        public async Task<CommentInfo> GetCommentDetails(string commentId, string merchandiseId)
+        public async Task<IActionResult> GetCommentDetails(string commentId)
         {
-            SqlSugarClient db = Database.GetInstance();
+            /*SqlSugarClient db = Database.GetInstance();
 
             // Step 1: Query the comment details
             var comment = await db.Queryable<COMMENTS>()
@@ -77,8 +81,16 @@ namespace UniTrade.Controllers.Merchandise
                 pictures = pic,
                 user_avatar = user.AVATAR,
                 user_name = user.NAME
-       
-            };
+            };*/
+
+
+            return Ok(new CommentInfo
+            {
+                content = "VS白色的白色台南市",
+                time = DateTime.Now,
+                user_avatar = "avatar.jpg",
+                user_name = "张三",
+            });
         }
     }
 }
