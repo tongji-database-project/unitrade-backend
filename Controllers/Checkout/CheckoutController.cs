@@ -8,6 +8,7 @@ using UniTrade.Tools;
 using System.Threading.Tasks;
 using SqlSugar;
 using System.Security.Claims;
+using Aop.Api.Domain;
 
 namespace UniTrade.Controllers.Checkout
 {
@@ -55,7 +56,7 @@ namespace UniTrade.Controllers.Checkout
                 // Console.WriteLine("开始获取购物车选中商品信息...");
                 // 获取购物车选中商品信息
                 order_summary.CartItems = await _db.Queryable<CARTS, MERCHANDISES>((c, m) => c.MERCHANDISE_ID == m.MERCHANDISE_ID)
-                                                 .Where((c, m) => c.CUSTOMER_ID == user_id)
+                                                 .Where((c, m) => c.CUSTOMER_ID == user_id && c.SELECTED == true)
                                                  .Select((c, m) => new CartItemViewModel
                                                  {
                                                      merchandise_id = c.MERCHANDISE_ID,
@@ -64,7 +65,7 @@ namespace UniTrade.Controllers.Checkout
                                                      picture = m.COVER_PICTURE_PATH,
                                                      quanity = (int)c.QUANITY,
                                                      cart_time = c.CART_TIME,
-                                                     selected = true // 默认选中
+                                                     selected = c.SELECTED
                                                  })
                                                  .ToListAsync();
 
@@ -105,6 +106,7 @@ namespace UniTrade.Controllers.Checkout
             }
 
             List<string> orderIds = new List<string>();
+            var user_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
 
             // 使用 SqlSugar 事务
             var result = await _db.Ado.UseTranAsync(async () =>
@@ -122,6 +124,25 @@ namespace UniTrade.Controllers.Checkout
                     };
 
                     await _db.Insertable(order).ExecuteCommandAsync();
+
+                    // 检查是否存在相同的 USER_ID, MERCHANDISE_ID, 和 ORDER_ID 组合
+                    var existingPlace = await _db.Queryable<PLACES>()
+                        .Where(p => p.CUSTOMER_ID == user_id && p.MERCHANDISE_ID == item.merchandise_id && p.ORDER_ID == orderId)
+                        .FirstAsync();
+
+                    // 如果记录不存在，则插入
+                    if (existingPlace == null)
+                    {
+                        var place = new PLACES
+                        {
+                            CUSTOMER_ID = user_id,
+                            MERCHANDISE_ID = item.merchandise_id,
+                            ORDER_ID = orderId
+                        };
+
+                        await _db.Insertable(place).ExecuteCommandAsync();
+                    }
+
                     orderIds.Add(orderId);
                 }
             });
