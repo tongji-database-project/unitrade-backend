@@ -3,18 +3,9 @@ using UniTrade.Tools;
 using UniTrade.Models;
 using UniTrade.ViewModels;
 using SqlSugar;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System;
-using System.Runtime.CompilerServices;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
-using Org.BouncyCastle.Utilities.Encoders;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Xml.Linq;
+
 
 namespace UniTrade.Controllers
 {
@@ -40,8 +31,6 @@ namespace UniTrade.Controllers
                     user = db.Queryable<USERS>()
                     .Where(c => c.PHONE == request.name || c.EMAIL == request.name)
                     .First();
-
-
 
                     if (user == null)
                     {
@@ -148,7 +137,6 @@ namespace UniTrade.Controllers
             }
         }
 
-
         /// <summary>
         /// 注册
         /// </summary>
@@ -170,7 +158,23 @@ namespace UniTrade.Controllers
 
                 if (user != null)
                 {
-                    return Unauthorized("用户已存在");
+                    return BadRequest("用户已存在");
+                }
+
+                var phone = db.Queryable<USERS>()
+                    .Where(c => c.PHONE == request.PhoneNumber)
+                    .First();
+                if (phone != null)
+                {
+                    return BadRequest("该手机号已被占用");
+                }
+
+                var email = db.Queryable<USERS>()
+                    .Where(c => c.EMAIL == request.Email)
+                    .First();
+                if (email != null)
+                {
+                    return BadRequest("该邮箱已被占用");
                 }
 
                 // 生成时间戳唯一ID
