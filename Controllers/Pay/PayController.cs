@@ -138,6 +138,7 @@ namespace UniTrade.Controllers.Pay
         {
             try
             {
+                Console.WriteLine("我成功了");
                 // 1. 从请求中获取所有的参数
                 var parameters = Request.Form.ToDictionary(k => k.Key, v => v.Value.ToString());
 
@@ -153,6 +154,8 @@ namespace UniTrade.Controllers.Pay
                 var outTradeNo = parameters["out_trade_no"]; // 商户订单号
                 var tradeNo = parameters["trade_no"]; // 支付宝交易号
 
+                Console.WriteLine(outTradeNo);
+
                 if (tradeStatus == "TRADE_SUCCESS" || tradeStatus == "TRADE_FINISHED")
                 {
                     // 4. 查询数据库中的订单并更新订单状态
@@ -164,7 +167,7 @@ namespace UniTrade.Controllers.Pay
                     {
                         return NotFound("订单不存在");
                     }
-
+                    Console.WriteLine("订单存在");
                     // 更新订单状态为已支付，并记录支付宝交易号
                     order.STATE = "WAI"; // 更新状态
                     await _db.Updateable(order).ExecuteCommandAsync();
@@ -185,17 +188,27 @@ namespace UniTrade.Controllers.Pay
         {
             try
             {
-                // 查询订单
-                var order = await _db.Queryable<ORDERS>()
-                                     .Where(o => o.ORDER_ID == order_id)
-                                     .FirstAsync();
+                // 查询订单，根据订单号查询所有相关的订单项
+                var orders = await _db.Queryable<ORDERS>()
+                                      .Where(o => o.ORDER_ID == order_id) // 根据 ORDER_ID 查询
+                                      .ToListAsync(); // 获取所有与该订单ID相关的商品条目
 
-                if (order == null)
+                if (orders == null || !orders.Any())
                 {
                     return NotFound(new { success = false, message = "订单不存在" });
                 }
 
-                var isPaid = order.STATE == "WAI"; // 判断订单是否已支付
+                // 更新该订单中每个商品的状态
+                foreach (var order in orders)
+                {
+                    order.STATE = "WAI"; // 将状态更新为 "已支付" (WAI)
+                    await _db.Updateable(order)
+                             .Where(o => o.ORDER_ID == order.ORDER_ID && o.MERCHANDISE_ID == order.MERCHANDISE_ID) // 使用复合主键条件更新
+                             .ExecuteCommandAsync();
+                }
+
+                // 判断所有订单项是否全部更新为 "WAI"
+                var isPaid = orders.All(o => o.STATE == "WAI");
 
                 return Ok(new { success = isPaid, message = isPaid ? "支付成功" : "支付未成功" });
             }
@@ -204,6 +217,9 @@ namespace UniTrade.Controllers.Pay
                 return StatusCode(500, $"服务器错误：{ex.Message}");
             }
         }
+
+
+
 
         /// <summary>
         /// 根据订单号获取订单的总金额。
