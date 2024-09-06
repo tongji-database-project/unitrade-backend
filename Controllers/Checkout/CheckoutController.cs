@@ -31,7 +31,7 @@ namespace UniTrade.Controllers.Checkout
         {
             var order_summary = new OrderSummaryViewModel()
             {
-                CartItems = new List<CartItemViewModel>() // 确保CartItems初始化为非空列表
+                cart_items = new List<CartItemViewModel>() // 确保CartItems初始化为非空列表
             };
 
             var user_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
@@ -55,7 +55,7 @@ namespace UniTrade.Controllers.Checkout
 
                 // Console.WriteLine("开始获取购物车选中商品信息...");
                 // 获取购物车选中商品信息
-                order_summary.CartItems = await _db.Queryable<CARTS, MERCHANDISES>((c, m) => c.MERCHANDISE_ID == m.MERCHANDISE_ID)
+                order_summary.cart_items = await _db.Queryable<CARTS, MERCHANDISES>((c, m) => c.MERCHANDISE_ID == m.MERCHANDISE_ID)
                                                  .Where((c, m) => c.CUSTOMER_ID == user_id && c.SELECTED == true)
                                                  .Select((c, m) => new CartItemViewModel
                                                  {
@@ -69,14 +69,14 @@ namespace UniTrade.Controllers.Checkout
                                                  })
                                                  .ToListAsync();
 
-                if (order_summary.CartItems.Count == 0)
+                if (order_summary.cart_items.Count == 0)
                 {
                     Console.WriteLine("购物车为空或未找到符合条件的商品。");
                     return BadRequest("购物车中没有选中的商品");
                 }
 
                 // 计算总价和运费
-                order_summary.total_price = order_summary.CartItems
+                order_summary.total_price = order_summary.cart_items
                                             .Where(item => item.selected)
                                             .Sum(item => (decimal)item.merchandise_price * item.quanity);
                 order_summary.shipping_fee = 10.0m; // 示例固定运费
@@ -100,7 +100,7 @@ namespace UniTrade.Controllers.Checkout
         [HttpPost("create-order")]
         public async Task<ActionResult> CreateOrder([FromBody] OrderSummaryViewModel order_summary)
         {
-            if (order_summary == null || order_summary.CartItems == null || !order_summary.CartItems.Any())
+            if (order_summary == null || order_summary.cart_items == null || !order_summary.cart_items.Any())
             {
                 return BadRequest("无效的订单数据");
             }
@@ -112,7 +112,7 @@ namespace UniTrade.Controllers.Checkout
             var result = await _db.Ado.UseTranAsync(async () =>
             {
                 var orderId = Guid.NewGuid().ToString(); // 生成随机的订单id
-                foreach (var item in order_summary.CartItems.Where(x => x.selected && x.quanity > 0))
+                foreach (var item in order_summary.cart_items.Where(x => x.selected && x.quanity > 0))
                 {
                     var order = new ORDERS
                     {

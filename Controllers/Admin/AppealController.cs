@@ -72,20 +72,25 @@ namespace UniTrade.Controllers
                                 JoinType.Inner, b.SELLER_ID==u.USER_ID,
                         })
                        .Where(a => a.APPEAL_ID == result.appeal_id)
-                       .Select((a, b, u) => u)
+                       .Select((a, b, u) => new { id = u.USER_ID, reputation = u.REPUTATION })
                        .First();
 
                         if (seller != null)
                         {
-                            seller.REPUTATION += 5;
-                            db.Updateable(seller).ExecuteCommand();
+                            db.Updateable<USERS>()
+                            .Where(u => u.USER_ID == seller.id)
+                            .SetColumns(u => new USERS { REPUTATION = (short) (seller.reputation + 5) })
+                            .ExecuteCommand();
                         }
                     }
                     else
                     {
                         appeal.APPEAL_STATE = "Dis";
                     }
-                    db.Updateable(appeal).ExecuteCommand();
+                    db.Updateable<APPEALS>()
+                           .Where(a => a.APPEAL_ID == result.appeal_id)
+                           .SetColumns(a => new APPEALS { APPEAL_STATE = appeal.APPEAL_STATE })
+                           .ExecuteCommand();
                     return Ok("Appeal completed successfully.");
                 }
             }

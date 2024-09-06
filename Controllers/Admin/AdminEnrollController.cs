@@ -25,7 +25,7 @@ namespace UniTrade.Controllers.Admin
                 var AdminInfo = db.Queryable<ADMINISTRATORS>()
                     .Where(a => a.ADMIN_ID == adminId)
                     .First();
-                if(AdminInfo != null)
+                if (AdminInfo != null)
                 {
                     if (AdminInfo.ADMIN_LEVEL)
                     {
@@ -57,7 +57,6 @@ namespace UniTrade.Controllers.Admin
                             return Ok();
                         }
                     }
-
                     else
                     {
                         return Unauthorized("没有权限注册新的管理员");
