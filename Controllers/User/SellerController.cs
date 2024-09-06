@@ -41,7 +41,7 @@ namespace UniTrade.Controllers.User
                 {
                     MERCHANDISE_ID = Guid.NewGuid().ToString(),
                     MERCHANDISE_NAME = model.name,
-                    PRICE = model.price*100,
+                    PRICE = model.price,
                     INVENTORY = model.inventory,
                     MERCHANDISE_TYPE = model.type,
                     COVER_PICTURE_PATH = model.cover_image_url,
@@ -181,7 +181,7 @@ namespace UniTrade.Controllers.User
                 var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
                     product.MERCHANDISE_ID,
                     product.MERCHANDISE_NAME,
-                    product.PRICE/100,
+                    product.PRICE,
                     product.INVENTORY,
                     product.MERCHANDISE_TYPE,
                     product.COVER_PICTURE_PATH,
@@ -239,7 +239,7 @@ namespace UniTrade.Controllers.User
                 var products = new PublishProductViewModel
                 {
                     name = theProduct.MERCHANDISE_NAME,
-                    price = theProduct.PRICE / 100,
+                    price = theProduct.PRICE,
                     inventory = theProduct.INVENTORY,
                     type = theProduct.MERCHANDISE_TYPE,
                     cover_image_url = theProduct.COVER_PICTURE_PATH,
@@ -358,7 +358,7 @@ namespace UniTrade.Controllers.User
                 var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
                     product.MERCHANDISE_ID,
                     product.MERCHANDISE_NAME,
-                    product.PRICE / 100,
+                    product.PRICE,
                     product.INVENTORY,
                     product.MERCHANDISE_TYPE,
                     product.COVER_PICTURE_PATH,
