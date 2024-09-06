@@ -41,7 +41,7 @@ namespace UniTrade.Controllers.User
                 {
                     MERCHANDISE_ID = Guid.NewGuid().ToString(),
                     MERCHANDISE_NAME = model.name,
-                    PRICE = model.price*100,
+                    PRICE = model.price,
                     INVENTORY = model.inventory,
                     MERCHANDISE_TYPE = model.type,
                     COVER_PICTURE_PATH = model.cover_image_url,
@@ -181,7 +181,7 @@ namespace UniTrade.Controllers.User
                 var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
                     product.MERCHANDISE_ID,
                     product.MERCHANDISE_NAME,
-                    product.PRICE/100,
+                    product.PRICE,
                     product.INVENTORY,
                     product.MERCHANDISE_TYPE,
                     product.COVER_PICTURE_PATH,
@@ -239,7 +239,7 @@ namespace UniTrade.Controllers.User
                 var products = new PublishProductViewModel
                 {
                     name = theProduct.MERCHANDISE_NAME,
-                    price = theProduct.PRICE / 100,
+                    price = theProduct.PRICE,
                     inventory = theProduct.INVENTORY,
                     type = theProduct.MERCHANDISE_TYPE,
                     cover_image_url = theProduct.COVER_PICTURE_PATH,
@@ -358,7 +358,68 @@ namespace UniTrade.Controllers.User
                 var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
                     product.MERCHANDISE_ID,
                     product.MERCHANDISE_NAME,
-                    product.PRICE / 100,
+                    product.PRICE,
+                    product.INVENTORY,
+                    product.MERCHANDISE_TYPE,
+                    product.COVER_PICTURE_PATH,
+                    product.DETAILS,
+                    salesData.FirstOrDefault(s => s.MerchandiseId == product.MERCHANDISE_ID)?.Sales ?? 0
+                )).ToList();
+
+                // 返回商品信息
+                return Ok(productsWithSales);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        //获取某用户所发布商品信息的api
+        [HttpPost("getSellerProducts")]
+        public async Task<IActionResult> GetSellerProducts([FromBody] ProductIDViewModel model)
+        {
+            SqlSugarClient db = Database.GetInstance();
+            try
+            {
+                //获取当前用户ID
+                var userId = model.ProductID;
+                // 获取用户发布的商品ID
+                var merchandiseIds = db.Queryable<SELLS>()
+                    .Where(s => s.SELLER_ID == userId)
+                    .Select(s => s.MERCHANDISE_ID)
+                    .ToList();
+                // 获取商品信息
+                var products = db.Queryable<MERCHANDISES>()
+                    .Where(m => merchandiseIds.Contains(m.MERCHANDISE_ID))
+                    .Select(product => new
+                    {
+                        product.MERCHANDISE_ID,
+                        product.MERCHANDISE_NAME,
+                        product.PRICE,
+                        product.INVENTORY,
+                        product.MERCHANDISE_TYPE,
+                        product.COVER_PICTURE_PATH,
+                        product.DETAILS
+                    })
+                    .ToList();
+
+                // 从 ORDERS 表中统计每个商品的销量
+                var salesData = db.Queryable<ORDERS>()
+                    .Where(o => merchandiseIds.Contains(o.MERCHANDISE_ID))
+                    .GroupBy(o => o.MERCHANDISE_ID)
+                    .Select(o => new
+                    {
+                        MerchandiseId = o.MERCHANDISE_ID,
+                        Sales = SqlFunc.AggregateSum(o.ORDER_QUANITY) // 使用聚合函数计算销量总和
+                    })
+                    .ToList();
+
+                // 合并销量数据到商品信息中
+                var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
+                    product.MERCHANDISE_ID,
+                    product.MERCHANDISE_NAME,
+                    product.PRICE,
                     product.INVENTORY,
                     product.MERCHANDISE_TYPE,
                     product.COVER_PICTURE_PATH,
