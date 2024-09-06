@@ -8,6 +8,7 @@ using UniTrade.Tools;
 using System.Threading.Tasks;
 using SqlSugar;
 using System.Security.Claims;
+using Aop.Api.Domain;
 
 namespace UniTrade.Controllers.Checkout
 {
@@ -55,7 +56,7 @@ namespace UniTrade.Controllers.Checkout
                 // Console.WriteLine("开始获取购物车选中商品信息...");
                 // 获取购物车选中商品信息
                 order_summary.CartItems = await _db.Queryable<CARTS, MERCHANDISES>((c, m) => c.MERCHANDISE_ID == m.MERCHANDISE_ID)
-                                                 .Where((c, m) => c.CUSTOMER_ID == user_id)
+                                                 .Where((c, m) => c.CUSTOMER_ID == user_id && c.SELECTED == true)
                                                  .Select((c, m) => new CartItemViewModel
                                                  {
                                                      merchandise_id = c.MERCHANDISE_ID,
@@ -64,7 +65,7 @@ namespace UniTrade.Controllers.Checkout
                                                      picture = m.COVER_PICTURE_PATH,
                                                      quanity = (int)c.QUANITY,
                                                      cart_time = c.CART_TIME,
-                                                     selected = true // 默认选中
+                                                     selected = c.SELECTED
                                                  })
                                                  .ToListAsync();
 

@@ -43,7 +43,7 @@ namespace UniTrade.Controllers.Cart
                                    picture = merch.COVER_PICTURE_PATH,
                                    quanity = (int)cart.QUANITY,
                                    cart_time = cart.CART_TIME,
-                                   selected = true // 假设所有商品默认被选中，可以根据实际业务逻辑进行调整
+                                   selected = cart.SELECTED
                                }).ToList();
 
                 return Ok(items);
@@ -84,7 +84,8 @@ namespace UniTrade.Controllers.Cart
                         CUSTOMER_ID = customer_id,
                         MERCHANDISE_ID = cart_item.merchandise_id,
                         QUANITY = cart_item.quanity,
-                        CART_TIME = DateTime.Now // 假设添加到购物车时记录当前时间
+                        CART_TIME = DateTime.Now, // 假设添加到购物车时记录当前时间
+                        SELECTED = true
                     };
 
                     _db.Insertable(newItem).ExecuteCommand();
@@ -137,11 +138,13 @@ namespace UniTrade.Controllers.Cart
                               .Where(c => c.CUSTOMER_ID == customer_id && c.MERCHANDISE_ID == cart_item_update.merchandise_id)
                               .First();
 
+                Console.WriteLine($"merchandise_id: {cart_item_update.merchandise_id}, quantity: {cart_item_update.quanity}, selected: {cart_item_update.selected}");
+
                 if (item != null)
                 {
                     // 更新商品数量
                     item.QUANITY = cart_item_update.quanity;
-                    // 更新其他可能的字段（如选中状态等）
+                    item.SELECTED = cart_item_update.selected;
 
                     // 使用组合主键条件更新
                     _db.Updateable(item)
