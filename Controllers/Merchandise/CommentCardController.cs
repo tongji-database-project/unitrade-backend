@@ -89,7 +89,7 @@ namespace UniTrade.Controllers.Merchandise
                 content = "VS白色的白色台南市",
                 time = DateTime.Now,
                 user_avatar = "avatar.jpg",
-                user_name = "张三"
+                user_name = "张三",
             });
         }
     }
