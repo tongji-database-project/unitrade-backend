@@ -37,7 +37,7 @@ namespace UniTrade.Controllers.Pay
             _alipayPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0JekS8c2APkUc6JpM5jlOVi5BqQIId1AFCUNVlEWf3Q0Y43w3Tldowxx4RfrCI9kjrHGz525/z63UK9FIcu6AkaP7NdiMCnTcYbNt/ZOTFGda9AqEXKTAvmpQYQByczipUzw9WEtTfXoeOTttUZQVabecpHJ6THOdNOySIaRz61HXF3oi/rTc5t2WQFaDyYWtEyxHqAfvjpnygR8saUPmeH3vTTpRarwgFvw+exAV8YgpT3cCm0Qwz9D+TPNNpihAsnFf4kbbjDUV4OG9DMKqfqtM3UpZEeAvfaG+mi551kcPhFQcJW1XivZKnJgZUfXgbeJFlsNjNJWhxolDFt/kwIDAQAB"; // 替换为支付宝公钥
             _signType = "RSA2";
             _charset = "UTF-8";
-            _returnUrl = "http://localhost:5173/payback";
+            _returnUrl = "http://47.97.215.255/payback";
             _notifyUrl = "http://47.97.215.255/api/pay/notify";
         }
 
