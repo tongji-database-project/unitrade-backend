@@ -12,22 +12,12 @@ namespace UniTrade.Controllers.Merchandise
     [ApiController]
     public class SellerInfoController : ControllerBase
     {
-        [HttpGet("{merchandiseId}")]
-        public async Task<IActionResult> GetSellerInfoByMerchandiseId(string merchandiseId)
+        [HttpGet("{sellerId}")]
+        public async Task<IActionResult> GetSellerInfoByMerchandiseId(string sellerId)
         {
             SqlSugarClient db = Database.GetInstance();
 
-            var sellerId = db.Queryable<SELLS>()
-                              .Where(s => s.MERCHANDISE_ID == merchandiseId)
-                              .Select(s => s.SELLER_ID)
-                              .Single();
-
-            if (sellerId == null)
-            {
-                return NotFound();
-            }
-
-            var sellerInfo = db.Queryable<USERS>()
+            var sellerInfo = await db.Queryable<USERS>()
                                 .Where(u => u.USER_ID == sellerId)
                                 .Select(u => new SellerInfo
                                 {
@@ -36,7 +26,7 @@ namespace UniTrade.Controllers.Merchandise
                                     name = u.NAME,
                                     reputation = u.REPUTATION
                                 })
-                                .Single();
+                                .SingleAsync();
 
             return Ok(sellerInfo);
 
