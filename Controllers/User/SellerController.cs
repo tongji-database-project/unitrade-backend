@@ -181,7 +181,7 @@ namespace UniTrade.Controllers.User
                 var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
                     product.MERCHANDISE_ID,
                     product.MERCHANDISE_NAME,
-                    product.PRICE,
+                    product.PRICE/100,
                     product.INVENTORY,
                     product.MERCHANDISE_TYPE,
                     product.COVER_PICTURE_PATH,
@@ -239,7 +239,7 @@ namespace UniTrade.Controllers.User
                 var products = new PublishProductViewModel
                 {
                     name = theProduct.MERCHANDISE_NAME,
-                    price = theProduct.PRICE,
+                    price = theProduct.PRICE / 100,
                     inventory = theProduct.INVENTORY,
                     type = theProduct.MERCHANDISE_TYPE,
                     cover_image_url = theProduct.COVER_PICTURE_PATH,
@@ -358,7 +358,7 @@ namespace UniTrade.Controllers.User
                 var productsWithSales = products.Select(product => new GetSellerProductsViewModels(
                     product.MERCHANDISE_ID,
                     product.MERCHANDISE_NAME,
-                    product.PRICE,
+                    product.PRICE / 100,
                     product.INVENTORY,
                     product.MERCHANDISE_TYPE,
                     product.COVER_PICTURE_PATH,
