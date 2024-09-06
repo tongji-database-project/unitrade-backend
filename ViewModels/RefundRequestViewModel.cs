@@ -2,8 +2,9 @@
 {
     public class RefundRequestViewModel
     {
-        public string OrderId { get; set; }
-        public string RefundReason { get; set; }
-        public string RefundFeedback { get; set; }
+        public string order_id { get; set; }
+        public string refund_reason { get; set; }
+        public string refund_feedback { get; set; }
+        public string refund_state { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class ConfirmReceiptViewModel
     {
-        public string OrderId { get; set; }
-        public string MerchandiseId { get; set; }
+        public string order_id { get; set; }
+        public string merchandise_id { get; set; }
     }
 }

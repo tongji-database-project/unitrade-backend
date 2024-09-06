@@ -2,10 +2,10 @@
 {
     public class AddCommentViewModel
     {
-        public string OrderId { get; set; }
-        public string MerchandiseId { get; set; }
-        public string Content { get; set; }
-        public string CommentType { get; set; }
+        public string order_id { get; set; }
+        public string merchandise_id { get; set; }
+        public string content { get; set; }
+        public string comment_type { get; set; }
 
     }
 

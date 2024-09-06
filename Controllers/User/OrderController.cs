@@ -112,14 +112,14 @@ namespace UniTrade.Controllers.User
 
         [Authorize]
         [HttpPost("addComment")]
-        public async Task<ActionResult> AddComment([FromForm] AddCommentViewModel model)
+        public async Task<ActionResult> AddComment(string order_id,string merchandise_id,string content,string comment_type)
         {
             try
             {
-                Console.WriteLine($"Received OrderId: {model.OrderId}");
-                Console.WriteLine($"Received MerchandiseId: {model.MerchandiseId}");
-                Console.WriteLine($"Received Content: {model.Content}");
-                Console.WriteLine($"Received CommentType: {model.CommentType}");
+                Console.WriteLine($"Received order_id: {order_id}");
+                Console.WriteLine($"Received merchandise_id: {merchandise_id}");
+                Console.WriteLine($"Received content: {content}");
+                Console.WriteLine($"Received comment_type: {comment_type}");
 
                 using (var db = Database.GetInstance())
                 {
@@ -127,9 +127,9 @@ namespace UniTrade.Controllers.User
                     var comment = new COMMENTS
                     {
                         COMMENT_ID = Guid.NewGuid().ToString(),  // 生成新的评论ID
-                        CONTENT = model.Content,  // 评论内容（前端传入）
+                        CONTENT = content,  // 评论内容（前端传入）
                         COMMENT_TIME = DateTime.Now,  // 当前时间作为评论时间
-                        COMMENT_TYPE = model.CommentType,  // 评论类型（前端传入）
+                        COMMENT_TYPE = comment_type,  // 评论类型（前端传入）
                     };
 
                     // 插入评论到 COMMENTS 表
@@ -139,8 +139,8 @@ namespace UniTrade.Controllers.User
                     var commentOn = new COMMENT_ON
                     {
                         COMMENT_ID = comment.COMMENT_ID,  // 评论ID
-                        ORDER_ID = model.OrderId,  // 订单ID（前端传入）
-                        MERCHANDISE_ID = model.MerchandiseId  // 商品ID（前端传入）
+                        ORDER_ID = order_id,  // 订单ID（前端传入）
+                        MERCHANDISE_ID = merchandise_id  // 商品ID（前端传入）
                     };
 
                     // 插入关系到 COMMENT_ON 表
@@ -158,7 +158,8 @@ namespace UniTrade.Controllers.User
 
         [Authorize]
         [HttpPost("confirmReceipt")]
-        public async Task<IActionResult> ConfirmReceipt([FromBody] ConfirmReceiptViewModel model)
+        //public async Task<IActionResult> ConfirmReceipt([FromBody] ConfirmReceiptViewModel model)
+        public async Task<IActionResult> ConfirmReceipt(string order_id, string merchandise_id)
         {
             try
             {
@@ -171,41 +172,43 @@ namespace UniTrade.Controllers.User
                     {
                         return Unauthorized("用户未认证");
                     }
-
+                    Console.WriteLine($"{nameof(ConfirmReceipt)}: {userId}");
                     // 检查订单和商品是否存在
                     var orderExists = await db.Queryable<ORDERS>()
-                        .AnyAsync(o => o.ORDER_ID == model.OrderId && o.MERCHANDISE_ID == model.MerchandiseId);
+                        .AnyAsync(o => o.ORDER_ID == order_id && o.MERCHANDISE_ID == merchandise_id);
 
                     if (!orderExists)
                     {
                         return BadRequest("订单或商品信息无效");
                     }
-
+                    Console.WriteLine("订单找到了");
                     // 插入 HOLDS 表记录
                     var holds = new HOLDS
                     {
                         SELLER_ID = (await db.Queryable<SELLS>()
-                            .Where(s => s.MERCHANDISE_ID == model.MerchandiseId)
+                            .Where(s => s.MERCHANDISE_ID == merchandise_id)
                             .Select(s => s.SELLER_ID)
                             .FirstAsync()) ?? throw new InvalidOperationException("未找到卖家"),
-                        MERCHANDISE_ID = model.MerchandiseId,
-                        ORDER_ID = model.OrderId
+                        MERCHANDISE_ID = merchandise_id,
+                        ORDER_ID = order_id
                     };
                     await db.Insertable(holds).ExecuteCommandAsync();
+                    Console.WriteLine("卖家找到了");
 
                     // 更新订单状态
-                    var order = await db.Queryable<ORDERS>()
-                        .Where(o => o.ORDER_ID == model.OrderId)
-                        .FirstAsync();
+                    var updateResult = await db.Updateable<ORDERS>()
+                        .SetColumns(o => o.STATE == "ysh")  // 设置更新状态
+                        .Where(o => o.ORDER_ID == order_id)  // 更新条件
+                        .ExecuteCommandAsync();
 
-                    if (order == null)
+                    Console.WriteLine("更新完成");
+
+                    if (updateResult == 0)
                     {
                         return NotFound("未找到订单");
                     }
 
-                    order.STATE = "ysh"; // 更新状态为已收货
-                    await db.Updateable(order).ExecuteCommandAsync();
-
+                    Console.WriteLine("更新订单状态为已收货");
                     return Ok("收货确认成功");
                 }
             }
@@ -218,7 +221,7 @@ namespace UniTrade.Controllers.User
 
         [Authorize]
         [HttpPost("requestRefund")]
-        public async Task<IActionResult> RequestRefund([FromBody] RefundRequestViewModel model)
+        public async Task<IActionResult> RequestRefund(string order_id,string refund_reason,string refund_feedback)
         {
             try
             {
@@ -226,32 +229,36 @@ namespace UniTrade.Controllers.User
                 {
                     // 确保订单存在
                     var exists = db.Queryable<ORDERS>()
-                        .Where(o => o.ORDER_ID == model.OrderId)
+                        .Where(o => o.ORDER_ID == order_id)
                         .Any();
 
                     if (!exists)
                     {
                         return NotFound("订单未找到");
                     }
-
+                    Console.WriteLine("找到订单了");
                     // 查找订单
                     var order = db.Queryable<ORDERS>()
-                        .Where(o => o.ORDER_ID == model.OrderId)
+                        .Where(o => o.ORDER_ID == order_id)
                         .Take(1) // 确保只取一个记录
                         .ToList() // 转换为列表
                         .First(); // 取第一个记录
+                    Console.WriteLine("找到记录了");
+                    // 更新订单状态   
+                    var updateResult = await db.Updateable<ORDERS>()
+                        .SetColumns(o => o.STATE == "yjs")  // 设置更新状态
+                        .Where(o => o.ORDER_ID == order_id)  // 更新条件
+                        .ExecuteCommandAsync();
 
-                    // 更新订单状态
-                    order.STATE = "yjs";
-                    await db.Updateable(order).ExecuteCommandAsync();
+                    Console.WriteLine("更新完成");
 
                     // 创建退款记录
                     var refund = new REFUNDS
                     {
                         REFUND_ID = Guid.NewGuid().ToString(),
-                        REFUND_STATE = "Pending",
-                        REFUND_REASON = model.RefundReason,
-                        REFUND_FEEDBACK = model.RefundFeedback,
+                        REFUND_STATE = "sqz",
+                        REFUND_REASON = refund_reason,
+                        REFUND_FEEDBACK = refund_feedback,
                         REFUND_TIME = DateTime.Now
                     };
                     await db.Insertable(refund).ExecuteCommandAsync();
@@ -260,7 +267,7 @@ namespace UniTrade.Controllers.User
                     var refundOn = new REFUND_ON
                     {
                         REFUND_ID = refund.REFUND_ID,
-                        ORDER_ID = model.OrderId,
+                        ORDER_ID = order_id,
                         MERCHANDISE_ID = order.MERCHANDISE_ID
                     };
                     await db.Insertable(refundOn).ExecuteCommandAsync();
