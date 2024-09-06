@@ -32,12 +32,12 @@ namespace UniTrade.Controllers.Pay
 
             // 从配置文件中读取支付宝参数
             _gatewayUrl = "https://openapi-sandbox.dl.alipaydev.com/gateway.do";
-            _appId = "9021000140649027"; // 替换为你的支付宝App ID
+            _appId = "9021000140649027";
             _merchantPrivateKey = "MIIEogIBAAKCAQEAguIjYblaz6mf4Rh0hrV4bFz3HilHnzUMiDTxaM7dwhWdyY5vJmyQZvSrDokrEycCM/rnOf089jzEtdrCu7rnEJz839/6xmp3N82hcXBydr3f3oXf/vIy6VUj73/Wmy1Znc2NTLnpff43kaNRJgW8csi1qQtpmo4BOTCb+bntsq2uT0FVUXJSASB/T4RJ50eDAQkbsV4RMV3q3f3sL904nmy7mDqktdUGpo1miDt3nb+mnPay1RbmpQfWx9NXTEac/t1jvqYyB6E7laglYXz7KES97gUz0ZPEFxvdnfrU9+gGmB46zMtc58XHO//piPPN0BnwXpd1QlkHUrFgnh6hUwIDAQABAoIBAAOMgCsZLIYu8j/XOumgKAjAKI8vzVpaxOE4lkciPM8TaPjbHNZs4Sl5ft3hCEL3rs6cAgMHg8ylbywDJ36RncxMhWrIlvMkVeE0eSkrRF9F3Lka5izygkDjZxsKW1ZPz3tA5JDtBZC+AOG5DO08AJUYLhzMS2u+Z/gWAlSuHuzWUHK94oWAcTwNJ2mFyt1uf4x8IkeUa5TWtm4iROUsyLUnHldjTxyBnPeB7MgwcefHH/0/USu+950LHdt38Or2HqFPRpEyJ8/RTWBKV7ZLhJA+3VAPeGqbjSSQzVxSCKtYJtQ5FeRUGH9qKIC/pUdz0TK5OQ3t8JGqtPo77cxT/akCgYEA8PxQfmmIVJCLNljSBP5n3ntNpzZB61b/vUkSf2Kw6/Z5xU+mecd1ghR524RNeSwaqRgMdVHseVbphYZE4NhRN2G01dzUl92cD/G5pl8df+m9WF+FQwr71Y9SOxG7m2R61oWH/2zkdgBYSHlW1sIvGENsSy5IL1UjHbw7ASaG3G0CgYEAiwm1cpUVPzSY0d7AnqDvD2tqF+O+Mg+g/AvQoAYfyGpQrQbK1vgQpbAOmmnkwqAsJ60QgDRX5iwoj2gxxkcmSwthVTKItIgTsWO4U/yTy/QhdrYBGKuDp6JyfMkg+SAOzTD/F+AerezzoTRy5tK2NYstUS2SxFOZguEZvFnNXL8CgYAy8UOa1XhKWBv1qyUKhTUz5ODvfhrFQyjgvLe6UgSQfRQUz9ejWrTOgMGZ1AgEm3wvTrQjgOP6apMG9PFOjqvshy0RIJOYXvKEtFbIgsbbqW+rZNXo7EN8S8XYUtFT8hO9kZDEQCKzhzMibvQahgYqnOYhpnEAAIFh4c6fWaOcqQKBgETvxWVQgb5a58J2/W4pQR6WFX5OzwinMxyFByWwo6WNAP8pNP0s9aQRDMyG4IOXQw1RA7NtQH/BOUMRWEyFDnl65QGHErzgE1OKq+QIgYdIPidLynNe5uIA617vokejG3OlbXV7C/sUVx+Aj8/efbVCkm+Ddxeck6qOzWHT7LylAoGASe/zM8rEFGOLEcoLMaETzFGAXC4Hhvg05NbdKdiU/AuPP58fbBHljrFL99s2Ra6NWBGlVOdRcx63AqiD9miKsB5uLyJG0QZNhPO2VkR4Uaxb9kvYFrTmkB3Y395NjpvFuITude6k8sFOHAW/iRAwu/06D0thKDqxZf4oEUnnobM="; // 替换为你的商户私钥
             _alipayPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0JekS8c2APkUc6JpM5jlOVi5BqQIId1AFCUNVlEWf3Q0Y43w3Tldowxx4RfrCI9kjrHGz525/z63UK9FIcu6AkaP7NdiMCnTcYbNt/ZOTFGda9AqEXKTAvmpQYQByczipUzw9WEtTfXoeOTttUZQVabecpHJ6THOdNOySIaRz61HXF3oi/rTc5t2WQFaDyYWtEyxHqAfvjpnygR8saUPmeH3vTTpRarwgFvw+exAV8YgpT3cCm0Qwz9D+TPNNpihAsnFf4kbbjDUV4OG9DMKqfqtM3UpZEeAvfaG+mi551kcPhFQcJW1XivZKnJgZUfXgbeJFlsNjNJWhxolDFt/kwIDAQAB"; // 替换为支付宝公钥
             _signType = "RSA2";
             _charset = "UTF-8";
-            _returnUrl = "https://localhost:5173/payback";
+            _returnUrl = "http://localhost:5173/payback";
             _notifyUrl = "http://47.97.215.255/api/pay/notify";
         }
 
@@ -76,7 +76,7 @@ namespace UniTrade.Controllers.Pay
                        Body = "订单详情描述" // 订单描述
                 };
 
-                request.SetReturnUrl($"{_returnUrl}/order_id={order_id}"); // 动态设置返回地址，包含订单号
+                request.SetReturnUrl($"{_returnUrl}?order_id={order_id}"); // 动态设置返回地址，包含订单号
                 request.SetNotifyUrl(_notifyUrl);
                 request.SetBizModel(model);
 
