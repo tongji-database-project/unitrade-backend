@@ -41,5 +41,12 @@ namespace UniTrade.Models
            /// </summary>           
            public DateTime CART_TIME {get;set;}
 
+           /// <summary>
+           /// Desc:
+           /// Default:
+           /// Nullable:False
+           /// </summary>      
+           public bool SELECTED { get; set; }
+
     }
 }
