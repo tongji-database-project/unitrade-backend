@@ -66,5 +66,29 @@ namespace UniTrade.Controllers.Home
 
             return Ok(productIds);
         }
+
+
+        [HttpPost("getSpecialStoreId")]
+        public async Task<IActionResult> GetSpecialStoreId([FromBody] GetSpecialIDViewModel model)
+        {
+            SqlSugarClient db = Database.GetInstance();
+
+            if (string.IsNullOrEmpty(model.SpecialName))
+            {
+                return BadRequest("输入不能为空");
+            }
+
+            var storeIds = db.Queryable<USERS>()
+                               .Where(p => p.NAME.Contains(model.SpecialName))
+                               .Select(p => p.USER_ID)
+                               .ToList();
+
+            if (storeIds == null || storeIds.Count == 0)
+            {
+                return NotFound("未找到包含指定名称的店铺");
+            }
+
+            return Ok(storeIds);
+        }
     }
 }
