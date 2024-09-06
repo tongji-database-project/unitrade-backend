@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NetTaste;
-using Org.BouncyCastle.Asn1.Ocsp;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
@@ -10,10 +8,7 @@ using System.Security.Claims;
 using UniTrade.Models;
 using UniTrade.Tools;
 using UniTrade.ViewModels;
-using Microsoft.AspNetCore.Http;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections;
+
 
 namespace UniTrade.Controllers.User
 {
@@ -21,7 +16,8 @@ namespace UniTrade.Controllers.User
     [Route("setpicture")]
     public class EditAvatorController : ControllerBase 
     {
-        private readonly string _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "img/avator");  /*上传到服务器的路径*/
+        private readonly string _uploadPath = Path.Combine("C:/data/images");  /*上传到服务器的路径*/
+
 
         public EditAvatorController()
         {
@@ -32,31 +28,29 @@ namespace UniTrade.Controllers.User
             }
         }
         [HttpPost]
-        public async Task<IActionResult> editAvator(IFormFile file)
+        public async Task<IActionResult> editAvator(IFormFile File)
         {
-            var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
             SqlSugarClient db = Database.GetInstance();
+            var userIdClaim = HttpContext.User.FindFirstValue(ClaimTypes.Name);
             try
             {
-                if (file == null || file.Length == 0)
+                if (File == null ||File.Length == 0)
                 {
                     return BadRequest("No file uploaded.");
                 }
 
                 // 创建文件路径
-                var fileName = Path.GetFileName(file.FileName);
+                var fileName = Path.GetFileName(File.FileName);
                 var filePath = Path.Combine(_uploadPath, fileName);
-
                 //保存到服务器
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await file.CopyToAsync(stream);
+                    await File.CopyToAsync(stream);
                 }
                 db.Updateable<USERS>()
-                          .SetColumns(u => new USERS { AVATAR = fileName })
-                          .Where(u => u.USER_ID == userIdClaim)
-                          .ExecuteCommand(); 
-
+                    .SetColumns(u => new USERS { AVATAR = fileName })
+                    .Where(u => u.USER_ID == userIdClaim)
+                    .ExecuteCommand();
                 return Ok();
             }
             catch (Exception ex)

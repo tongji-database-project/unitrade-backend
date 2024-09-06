@@ -11,13 +11,12 @@ namespace UniTrade.Controllers
         public static string RegVeriCode = "000000";
         public static string FinVeriCode = "000000";
 
-        // 优化了接收参数
         [HttpPost]
         public async Task<IActionResult> SendMailCode([FromQuery] string address, [FromQuery] string type)
         {
             if (string.IsNullOrEmpty(address) || string.IsNullOrEmpty(type))
             {
-                return BadRequest("Address or type cannot be null.");
+                return BadRequest("邮箱或请求类型为空");
             }
 
             string mailName = address;
@@ -41,14 +40,14 @@ namespace UniTrade.Controllers
                     LogVeriCode = Vericode;
                     break;
                 default:
-                    return BadRequest("Invalid type.");
+                    return BadRequest("无效的请求类型");
             }
 
             string host = "smtp.163.com";
             string userName = "hzd16992004@163.com";
             string pwd = "NPJRZHXXNJSRYUVN";
             MimeMessage message = new();
-            message.From.Add(new MailboxAddress("校易购", userName));
+            message.From.Add(new MailboxAddress("TJ校易购", userName));
             message.To.Add(new MailboxAddress(title, mailName));
             message.Subject = title;
             message.Body = new BodyBuilder
