@@ -105,6 +105,7 @@ namespace UniTrade.Controllers.Checkout
             }
 
             List<string> orderIds = new List<string>();
+            var user_id = HttpContext.User.FindFirstValue(ClaimTypes.Name); // 获取用户id
 
             // 使用 SqlSugar 事务
             var result = await _db.Ado.UseTranAsync(async () =>
@@ -122,6 +123,25 @@ namespace UniTrade.Controllers.Checkout
                     };
 
                     await _db.Insertable(order).ExecuteCommandAsync();
+
+                    // 检查是否存在相同的 USER_ID, MERCHANDISE_ID, 和 ORDER_ID 组合
+                    var existingPlace = await _db.Queryable<PLACES>()
+                        .Where(p => p.CUSTOMER_ID == user_id && p.MERCHANDISE_ID == item.merchandise_id && p.ORDER_ID == orderId)
+                        .FirstAsync();
+
+                    // 如果记录不存在，则插入
+                    if (existingPlace == null)
+                    {
+                        var place = new PLACES
+                        {
+                            CUSTOMER_ID = user_id,
+                            MERCHANDISE_ID = item.merchandise_id,
+                            ORDER_ID = orderId
+                        };
+
+                        await _db.Insertable(place).ExecuteCommandAsync();
+                    }
+
                     orderIds.Add(orderId);
                 }
             });
