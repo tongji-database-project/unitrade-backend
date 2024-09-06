@@ -6,7 +6,7 @@
         public string MerchandiseId { get; set; }
         public string Content { get; set; }
         public string CommentType { get; set; }
-        public IFormFile CommentPicture { get; set; }
+
     }
 
 }

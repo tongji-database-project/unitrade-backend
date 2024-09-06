@@ -112,7 +112,7 @@ namespace UniTrade.Controllers.User
 
         [Authorize]
         [HttpPost("addComment")]
-        public async Task<ActionResult<List<COMMENTS>>> AddComment([FromForm] AddCommentViewModel model)
+        public async Task<ActionResult> AddComment([FromForm] AddCommentViewModel model)
         {
             try
             {
@@ -120,41 +120,30 @@ namespace UniTrade.Controllers.User
                 Console.WriteLine($"Received MerchandiseId: {model.MerchandiseId}");
                 Console.WriteLine($"Received Content: {model.Content}");
                 Console.WriteLine($"Received CommentType: {model.CommentType}");
+
                 using (var db = Database.GetInstance())
                 {
-                    // 处理文件上传
-                    byte[] fileBytes = null;
-                    if (model.CommentPicture != null && model.CommentPicture.Length > 0)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await model.CommentPicture.CopyToAsync(memoryStream);
-                            fileBytes = memoryStream.ToArray();
-                        }
-                    }
-
-                    // 创建评论对象
+                    // 创建评论对象并插入到 COMMENTS 表
                     var comment = new COMMENTS
                     {
-                        COMMENT_ID = Guid.NewGuid().ToString(),
-                        CONTENT = model.Content,
-                        COMMENT_TIME = DateTime.Now,
-                        COMMENT_TYPE = model.CommentType,
-                        COMMENT_PICTURE = fileBytes
+                        COMMENT_ID = Guid.NewGuid().ToString(),  // 生成新的评论ID
+                        CONTENT = model.Content,  // 评论内容（前端传入）
+                        COMMENT_TIME = DateTime.Now,  // 当前时间作为评论时间
+                        COMMENT_TYPE = model.CommentType,  // 评论类型（前端传入）
                     };
 
-                    // 插入评论
+                    // 插入评论到 COMMENTS 表
                     await db.Insertable(comment).ExecuteCommandAsync();
 
-                    // 创建评论与订单商品的关系
+                    // 创建 COMMENT_ON 对象并插入到 COMMENT_ON 表，建立评论与订单、商品的关系
                     var commentOn = new COMMENT_ON
                     {
-                        COMMENT_ID = comment.COMMENT_ID,
-                        ORDER_ID = model.OrderId,
-                        MERCHANDISE_ID = model.MerchandiseId
+                        COMMENT_ID = comment.COMMENT_ID,  // 评论ID
+                        ORDER_ID = model.OrderId,  // 订单ID（前端传入）
+                        MERCHANDISE_ID = model.MerchandiseId  // 商品ID（前端传入）
                     };
 
-                    // 插入评论与订单商品的关系
+                    // 插入关系到 COMMENT_ON 表
                     await db.Insertable(commentOn).ExecuteCommandAsync();
 
                     return Ok("评论已成功添加！");
