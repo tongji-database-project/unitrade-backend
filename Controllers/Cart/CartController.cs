@@ -138,7 +138,7 @@ namespace UniTrade.Controllers.Cart
                               .Where(c => c.CUSTOMER_ID == customer_id && c.MERCHANDISE_ID == cart_item_update.merchandise_id)
                               .First();
 
-                Console.WriteLine($"merchandise_id: {cart_item_update.merchandise_id}, quantity: {cart_item_update.quanity}, selected: {cart_item_update.selected}");
+                // Console.WriteLine($"merchandise_id: {cart_item_update.merchandise_id}, quantity: {cart_item_update.quanity}, selected: {cart_item_update.selected}");
 
                 if (item != null)
                 {

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UniTrade.Tools;
 using UniTrade.Models;
 using UniTrade.ViewModels;
+using Aop.Api.Domain;
 
 namespace UniTrade.Controllers.Home
 {
@@ -31,7 +32,8 @@ namespace UniTrade.Controllers.Home
             {
                 name=merchandise.MERCHANDISE_NAME,
                 price=merchandise.PRICE,
-                image=merchandise.COVER_PICTURE_PATH
+                image=merchandise.COVER_PICTURE_PATH,
+                detail= merchandise.DETAILS
             });
 
 
