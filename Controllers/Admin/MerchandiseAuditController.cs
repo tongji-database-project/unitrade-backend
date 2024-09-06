@@ -77,17 +77,18 @@ namespace UniTrade.Controllers.Admin
         }
 
         [HttpPost("offshelf")]
-        public IActionResult AuditRefunds([FromBody] string merchandise_id)
+        public IActionResult AuditRefunds([FromBody] PullMerchandise result)
         {
+            string merchandise_id = result.merchandise_id;
             SqlSugarClient db = Database.GetInstance();
             try
             {
                 db.Deleteable<MERCHANDISES>()
                      .Where(m => m.MERCHANDISE_ID == merchandise_id)
                      .ExecuteCommand();
-                db.Deleteable<SELLS>()
+                /*db.Deleteable<SELLS>()
                      .Where(s => s.MERCHANDISE_ID == merchandise_id)
-                     .ExecuteCommand();
+                     .ExecuteCommand();*/
                 return Ok();
             }
             catch (Exception ex)

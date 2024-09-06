@@ -24,4 +24,11 @@
         public int sum { get; set; }
         public double average { get; set; }
     }
+
+    public class PullMerchandise
+    {
+        public string merchandise_id { get; set; }
+
+    }
+
 }
