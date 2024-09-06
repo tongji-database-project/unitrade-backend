@@ -2,26 +2,26 @@
 {
     public class MerchandiseAuditInfo
     {
-        string merchandise_id { get; set; }
-        string merchandise_name { get; set; }
-        string merchandise_type { get; set; }
-        decimal merchandise_price { get; set; }
-        string seller_name { get; set; }
-        short reputation { get; set; }
-        int commit_sum { get; set; }
-        float average_point { get; set; }
+        public string merchandise_id { get; set; }
+        public string merchandise_name { get; set; }
+        public string merchandise_type { get; set; }
+        public decimal merchandise_price { get; set; }
+        public string seller_name { get; set; }
+        public short reputation { get; set; }
+        public int commit_sum { get; set; }
+        public double average_point { get; set; }
     }
 
     public class MerchandiseCommit
     {
-        string merchandise_id { get; set; }
-        int point { get; set; }
+        public string merchandise_id { get; set; }
+        public int point { get; set; }
     }
 
     public class MerchandiseCommitStatistics
     {
-        string merchandise_id { get; set; }
-        int sum { get; set; }
-        float average { get; set; }
+        public string merchandise_id { get; set; }
+        public int sum { get; set; }
+        public double average { get; set; }
     }
 }
