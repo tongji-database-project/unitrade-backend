@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using UniTrade.Tools;
 using UniTrade.Models;
+using UniTrade.ViewModels;
 
 namespace UniTrade.Controllers.Home
 {
@@ -41,6 +42,29 @@ namespace UniTrade.Controllers.Home
             //var merchandise_id_list = new string[] { "1", "2", "3", "4","5","6","7","8","1", "1", "2", "3", "4", "5", "6", "7", "8", "1", "1", "2", "3", "4", "5", "6", "7", "8", "1", "1", "2", "3", "4", "5", "6", "7", "8", "1", "1", "2", "3", "4", "5", "6", "7", "8", "1" };
 
             //return Ok(merchandise_id_list);
+        }
+
+        [HttpPost("getSpecialId")]
+        public async Task<IActionResult> GetSpecialId([FromBody] GetSpecialIDViewModel model)
+        {
+            SqlSugarClient db = Database.GetInstance();
+
+            if (string.IsNullOrEmpty(model.SpecialName))
+            {
+                return BadRequest("输入不能为空");
+            }
+
+            var productIds = db.Queryable<MERCHANDISES>()
+                               .Where(p => p.MERCHANDISE_NAME.Contains(model.SpecialName))
+                               .Select(p => p.MERCHANDISE_ID)
+                               .ToList();
+
+            if (productIds == null || productIds.Count == 0)
+            {
+                return NotFound("未找到包含指定名称的商品");
+            }
+
+            return Ok(productIds);
         }
     }
 }
