@@ -4,6 +4,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using UniTrade.Tools;
+using UniTrade.ViewModels;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace UniTrade
 {
@@ -82,8 +84,9 @@ namespace UniTrade
                 options.IncludeXmlComments(xmlPath);
             });
 
-            // 配置 HttpClient 和 PayHelper 的依赖注入
-            services.AddHttpClient<PayHelper>();
+            // 配置依赖注入
+
+
         }
 
         // 该方法会被运行时调用，用于配置 HTTP 请求管道
