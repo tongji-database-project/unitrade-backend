@@ -15,7 +15,7 @@ namespace UniTrade.Controllers.Merchandise
         [HttpGet("{merchandiseId}")]
         public async Task<IActionResult> GetSellerInfoByMerchandiseId(string merchandiseId)
         {
-            /*SqlSugarClient db = Database.GetInstance();
+            SqlSugarClient db = Database.GetInstance();
 
             var sellerId = db.Queryable<SELLS>()
                               .Where(s => s.MERCHANDISE_ID == merchandiseId)
@@ -32,21 +32,21 @@ namespace UniTrade.Controllers.Merchandise
                                 .Select(u => new SellerInfo
                                 {
                                     id = u.USER_ID,
-                                    image = u.AVATAR
-                                    name = u.NAME
+                                    image = u.AVATAR,
+                                    name = u.NAME,
                                     reputation = u.REPUTATION
                                 })
                                 .Single();
 
-            return Ok(sellerInfo);*/
+            return Ok(sellerInfo);
 
-            return Ok(new SellerInfo
+            /*return Ok(new SellerInfo
             {
                 id = "2",
                 image = "avatar.jpg",
                 name = "张三",
                 reputation = 78,
-            });
+            });*/
         }
     }
 }
