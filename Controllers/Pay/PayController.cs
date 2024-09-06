@@ -8,6 +8,7 @@ using Aop.Api;
 using Aop.Api.Request;
 using Aop.Api.Domain;
 using Aop.Api.Response;
+using Aop.Api.Util;
 
 namespace UniTrade.Controllers.Pay
 {
@@ -37,7 +38,7 @@ namespace UniTrade.Controllers.Pay
             _signType = "RSA2";
             _charset = "UTF-8";
             _returnUrl = "https://localhost:5173/payback";
-            _notifyUrl = "https://localhost:5173/payback";
+            _notifyUrl = "http://47.97.215.255/api/pay/notify";
         }
 
         [HttpGet("create-payment")]
@@ -53,7 +54,7 @@ namespace UniTrade.Controllers.Pay
             var order = await GetOrderInfo(order_id);
             if (order == null)
             {
-                //return NotFound("订单不存在");
+                return NotFound("订单不存在");
             }
 
             try
@@ -64,65 +65,33 @@ namespace UniTrade.Controllers.Pay
                     "json", "1.0", _signType, _alipayPublicKey, _charset, false);
 
                 // 构造支付请求对象
-                AlipayOpenPublicTemplateMessageIndustryModifyRequest request = new AlipayOpenPublicTemplateMessageIndustryModifyRequest();
+                AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
 
-                var model = new AlipayTradeWapPayModel
+                var model = new AlipayTradePagePayModel
                 {
                        OutTradeNo = order_id,//order.ORDER_ID,
-                       ProductCode = "QUICK_WAP_WAY",
-                       TotalAmount = "12.02",//(order.ORDER_QUANITY * GetMerchandisePrice(order.MERCHANDISE_ID)).ToString("F2"),
+                       ProductCode = "FAST_INSTANT_TRADE_PAY",
+                       TotalAmount = (order.ORDER_QUANITY * GetMerchandisePrice(order.MERCHANDISE_ID)).ToString("F2"),
                        Subject = "订单支付 - " + order_id,//order.ORDER_ID,
-                       Body = "订单详情描述",
-                       QuitUrl = _returnUrl // 支付中途退出返回商户网站地址
+                       Body = "订单详情描述" // 订单描述
                 };
 
+                request.SetReturnUrl($"{_returnUrl}/order_id={order_id}"); // 动态设置返回地址，包含订单号
+                request.SetNotifyUrl(_notifyUrl);
                 request.SetBizModel(model);
 
-                AlipayOpenPublicTemplateMessageIndustryModifyResponse response = client.Execute(request);
+                // 执行请求，返回支付宝支付页面HTML代码
+                var response = client.pageExecute(request, null, "POST");
 
                 if (response.IsError)
                 {
-                    //return StatusCode(500, "创建支付请求失败");
-                    return Ok("Ok");
+                    return StatusCode(500, "创建支付请求失败：" + response.SubMsg);
                 }
                 else
                 {
-                    return Ok();
+                     // 返回支付宝支付页面HTML代码
+                    return Content(response.Body, "text/html");
                 }
-                // 创建支付宝客户端实例
-                //DefaultAopClient client = new DefaultAopClient(
-                //    _gatewayUrl, _appId, _merchantPrivateKey,
-                //    "json", "1.0", _signType, _alipayPublicKey, _charset, false);
-
-                // 构造支付请求对象
-                //AlipayTradeWapPayModel model = new AlipayTradeWapPayModel
-                //{
-                //    OutTradeNo = order.ORDER_ID,
-                //    ProductCode = "QUICK_WAP_WAY",
-                //    TotalAmount = (order.ORDER_QUANITY * GetMerchandisePrice(order.MERCHANDISE_ID)).ToString("F2"),
-                //    Subject = "订单支付 - " + order.ORDER_ID,
-                //    Body = "订单详情描述",
-                //    QuitUrl = _returnUrl // 支付中途退出返回商户网站地址
-                //};
-
-                //AlipayTradeWapPayRequest request = new AlipayTradeWapPayRequest();
-                //request.SetReturnUrl(_returnUrl + "?tradeNo=" + order.ORDER_ID); // 动态设置返回地址，包含订单号
-                //request.SetNotifyUrl(_notifyUrl);
-                //request.SetBizModel(model);
-
-                // 执行请求，获取支付宝支付页面的URL
-                //AlipayTradeWapPayResponse response = client.pageExecute<AlipayTradeWapPayResponse>(request, null, "post");
-
-                //if (response != null)
-                //{
-                //    // 返回支付宝支付页面HTML代码
-                //    return Content(response.Body, "text/html");
-                //}
-                //else
-                //{
-                //    return StatusCode(500, "创建支付请求失败");
-                //}
-                //return Ok();
             }
             catch (Exception ex)
             {
@@ -163,14 +132,78 @@ namespace UniTrade.Controllers.Pay
             return Ok("支付成功");
         }
 
-        // 支付宝支付后的异步回调页面
+        // 支付异步通知
         [HttpPost("notify")]
-        public IActionResult Notify()
+        public async Task<IActionResult> AlipayNotify()
         {
-            // 处理支付宝支付后的异步通知
-            return Ok();
+            try
+            {
+                // 1. 从请求中获取所有的参数
+                var parameters = Request.Form.ToDictionary(k => k.Key, v => v.Value.ToString());
+
+                // 2. 验证通知签名
+                var isValid = AlipaySignature.RSACheckV1(parameters, _alipayPublicKey, _charset, _signType, true);
+                if (!isValid)
+                {
+                    return BadRequest("签名验证失败");
+                }
+
+                // 3. 根据通知中的 trade_status 判断支付结果
+                var tradeStatus = parameters["trade_status"];
+                var outTradeNo = parameters["out_trade_no"]; // 商户订单号
+                var tradeNo = parameters["trade_no"]; // 支付宝交易号
+
+                if (tradeStatus == "TRADE_SUCCESS" || tradeStatus == "TRADE_FINISHED")
+                {
+                    // 4. 查询数据库中的订单并更新订单状态
+                    var order = await _db.Queryable<ORDERS>()
+                                         .Where(o => o.ORDER_ID == outTradeNo)
+                                         .FirstAsync();
+
+                    if (order == null)
+                    {
+                        return NotFound("订单不存在");
+                    }
+
+                    // 更新订单状态为已支付，并记录支付宝交易号
+                    order.STATE = "WAI"; // 更新状态
+                    await _db.Updateable(order).ExecuteCommandAsync();
+
+                    return Ok("success"); // 向支付宝返回成功
+                }
+
+                return BadRequest("支付未成功");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"服务器错误：{ex.Message}");
+            }
         }
 
+        [HttpGet("payment-status")]
+        public async Task<IActionResult> GetPaymentStatus(string order_id)
+        {
+            try
+            {
+                // 查询订单
+                var order = await _db.Queryable<ORDERS>()
+                                     .Where(o => o.ORDER_ID == order_id)
+                                     .FirstAsync();
+
+                if (order == null)
+                {
+                    return NotFound(new { success = false, message = "订单不存在" });
+                }
+
+                var isPaid = order.STATE == "WAI"; // 判断订单是否已支付
+
+                return Ok(new { success = isPaid, message = isPaid ? "支付成功" : "支付未成功" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"服务器错误：{ex.Message}");
+            }
+        }
 
         /// <summary>
         /// 根据订单号获取订单的总金额。
