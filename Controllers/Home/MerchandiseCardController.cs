@@ -15,7 +15,7 @@ namespace UniTrade.Controllers.Home
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMerchandiseById(string id)
         {
-            /*SqlSugarClient db = Database.GetInstance();
+            SqlSugarClient db = Database.GetInstance();
 
 
             var merchandise = await db.Queryable<MERCHANDISES>()
@@ -27,21 +27,21 @@ namespace UniTrade.Controllers.Home
                 return NotFound();
             }
 
-            return Ok(new
+            return Ok(new MerchandiseCardInfo
             {
-                merchandise.MERCHANDISE_NAME,
-                merchandise.PRICE,
-                merchandise.PICTURE_PATH
-            });*/
+                name=merchandise.MERCHANDISE_NAME,
+                price=merchandise.PRICE,
+                image=merchandise.COVER_PICTURE_PATH
+            });
 
 
             //测试用
-            return Ok(new MerchandiseCardInfo
+            /*return Ok(new MerchandiseCardInfo
             {
                 image="avatar.jpg",
                 name="可乐",
                 price=9900,
-            });
+            });*/
 
 
         }
