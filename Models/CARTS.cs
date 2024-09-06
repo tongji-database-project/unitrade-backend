@@ -23,7 +23,7 @@ namespace UniTrade.Models
            /// <summary>
            /// Desc:
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
            public string MERCHANDISE_ID {get;set;}
 
