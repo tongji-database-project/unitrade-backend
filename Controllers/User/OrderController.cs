@@ -111,8 +111,37 @@ namespace UniTrade.Controllers.User
         }
 
         [Authorize]
+        [HttpGet("merchandise/name")]
+        public async Task<ActionResult<string>> GetMerchandiseName(string merchandise_id)
+        {
+            try
+            {
+                using (var db = Database.GetInstance()) // 使用 using 语句简化数据库连接管理
+                {
+                    // 查询商品名称
+                    var merchandiseName = await db.Queryable<MERCHANDISES>()
+                        .Where(m => m.MERCHANDISE_ID == merchandise_id)
+                        .Select(m => m.MERCHANDISE_NAME)
+                        .FirstAsync(); // 获取商品名称
+                    Console.WriteLine(merchandiseName);
+                    if (string.IsNullOrEmpty(merchandiseName))
+                    {
+                        return NotFound("未找到商品信息");
+                    }
+
+                    return Ok(merchandiseName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"发生错误: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
+            }
+        }
+
+        [Authorize]
         [HttpPost("addComment")]
-        public async Task<ActionResult> AddComment(string order_id,string merchandise_id,string content,string comment_type)
+        public async Task<ActionResult> AddComment(string order_id,string merchandise_id,string content,string comment_type,short quality_rating,short attitude_rating,short price_rating,short logistic_speed_rating,short conformity_rating)
         {
             try
             {
@@ -146,7 +175,22 @@ namespace UniTrade.Controllers.User
                     // 插入关系到 COMMENT_ON 表
                     await db.Insertable(commentOn).ExecuteCommandAsync();
 
-                    return Ok("评论已成功添加！");
+                    // 插入评分到 SCORES 表
+                    var scores = new SCORES
+                    {
+                        COMMENT_ID = comment.COMMENT_ID,  // 评论ID
+                        QUALITY = quality_rating,  // 质量评分（前端传入）
+                        ATTITUDE = attitude_rating,  // 态度评分（前端传入）
+                        PRICE = price_rating,  // 价格评分（前端传入）
+                        LOGISTIC_SPEED = logistic_speed_rating,  // 物流速度评分（前端传入）
+                        CONFORMITY = conformity_rating  // 描述相符评分（前端传入）
+                    };
+
+                    // 插入评分到 SCORES 表
+                    await db.Insertable(scores).ExecuteCommandAsync();
+
+                    return Ok("评论和评分已成功添加！");
+
                 }
             }
             catch (Exception ex)
@@ -197,7 +241,7 @@ namespace UniTrade.Controllers.User
 
                     // 更新订单状态
                     var updateResult = await db.Updateable<ORDERS>()
-                        .SetColumns(o => o.STATE == "ysh")  // 设置更新状态
+                        .SetColumns(o => o.STATE == "Rec")  // 设置更新状态
                         .Where(o => o.ORDER_ID == order_id)  // 更新条件
                         .ExecuteCommandAsync();
 
@@ -246,7 +290,7 @@ namespace UniTrade.Controllers.User
                     Console.WriteLine("找到记录了");
                     // 更新订单状态   
                     var updateResult = await db.Updateable<ORDERS>()
-                        .SetColumns(o => o.STATE == "yjs")  // 设置更新状态
+                        .SetColumns(o => o.STATE == "Pen")  // 设置更新状态
                         .Where(o => o.ORDER_ID == order_id)  // 更新条件
                         .ExecuteCommandAsync();
 
@@ -256,7 +300,7 @@ namespace UniTrade.Controllers.User
                     var refund = new REFUNDS
                     {
                         REFUND_ID = Guid.NewGuid().ToString(),
-                        REFUND_STATE = "sqz",
+                        REFUND_STATE = "Pen",
                         REFUND_REASON = refund_reason,
                         REFUND_FEEDBACK = refund_feedback,
                         REFUND_TIME = DateTime.Now

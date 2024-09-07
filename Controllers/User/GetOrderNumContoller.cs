@@ -40,8 +40,8 @@ namespace UniTrade.Controllers.User
                     })
                     .ToList();
                 int all_num=all.Count();
-                int recevied_num = all.Where(o => o.state == "ysh").Count();
-                int transit_num = all.Where(o => o.state == "yfh").Count();
+                int recevied_num = all.Where(o => o.state == "Rec").Count();
+                int transit_num = all.Where(o => o.state == "Tra").Count();
                 int command_num = db.Queryable<USERS, PLACES, ORDERS, COMMENT_ON, COMMENTS>(
                     (user, place, order, comment_on, comment) => new object[] {
                        JoinType.Inner,user.USER_ID==place.CUSTOMER_ID,
