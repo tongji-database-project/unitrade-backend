@@ -290,7 +290,7 @@ namespace UniTrade.Controllers.User
                     Console.WriteLine("找到记录了");
                     // 更新订单状态   
                     var updateResult = await db.Updateable<ORDERS>()
-                        .SetColumns(o => o.STATE == "yjs")  // 设置更新状态
+                        .SetColumns(o => o.STATE == "Pen")  // 设置更新状态
                         .Where(o => o.ORDER_ID == order_id)  // 更新条件
                         .ExecuteCommandAsync();
 
@@ -300,7 +300,7 @@ namespace UniTrade.Controllers.User
                     var refund = new REFUNDS
                     {
                         REFUND_ID = Guid.NewGuid().ToString(),
-                        REFUND_STATE = "sqz",
+                        REFUND_STATE = "Pen",
                         REFUND_REASON = refund_reason,
                         REFUND_FEEDBACK = refund_feedback,
                         REFUND_TIME = DateTime.Now
