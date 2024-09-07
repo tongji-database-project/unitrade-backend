@@ -25,35 +25,35 @@ namespace UniTrade.Models
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public bool QUALITY {get;set;}
+           public short QUALITY {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public bool ATTITUDE {get;set;}
+           public short ATTITUDE {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public bool PRICE {get;set;}
+           public short PRICE {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public bool LOGISTIC_SPEED {get;set;}
+           public short LOGISTIC_SPEED {get;set;}
 
            /// <summary>
            /// Desc:
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public bool CONFORMITY {get;set;}
+           public short CONFORMITY {get;set;}
 
     }
 }

@@ -28,7 +28,7 @@ namespace UniTrade.Tools
             var token = new JwtSecurityToken(TokenParameter.Issuer,
                     TokenParameter.Audience,
                     claims,
-                    expires: DateTime.Now.AddMinutes(TokenParameter.AccessTokenExpirationMinutes),
+                    expires: DateTime.Now.AddDays(TokenParameter.AccessTokenExpirationDays),
                     signingCredentials: credentials);
 
             return tokenHandler.WriteToken(token);
@@ -46,7 +46,6 @@ namespace UniTrade.Tools
                 return Convert.ToBase64String(randomNumber);
             }
         }
-
 
         /// <summary>
         /// 验证 access token
