@@ -111,6 +111,35 @@ namespace UniTrade.Controllers.User
         }
 
         [Authorize]
+        [HttpGet("merchandise/name")]
+        public async Task<ActionResult<string>> GetMerchandiseName(string merchandise_id)
+        {
+            try
+            {
+                using (var db = Database.GetInstance()) // 使用 using 语句简化数据库连接管理
+                {
+                    // 查询商品名称
+                    var merchandiseName = await db.Queryable<MERCHANDISES>()
+                        .Where(m => m.MERCHANDISE_ID == merchandise_id)
+                        .Select(m => m.MERCHANDISE_NAME)
+                        .FirstAsync(); // 获取商品名称
+                    Console.WriteLine(merchandiseName);
+                    if (string.IsNullOrEmpty(merchandiseName))
+                    {
+                        return NotFound("未找到商品信息");
+                    }
+
+                    return Ok(merchandiseName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"发生错误: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "服务器内部错误");
+            }
+        }
+
+        [Authorize]
         [HttpPost("addComment")]
         public async Task<ActionResult> AddComment(string order_id,string merchandise_id,string content,string comment_type,short quality_rating,short attitude_rating,short price_rating,short logistic_speed_rating,short conformity_rating)
         {
@@ -212,7 +241,7 @@ namespace UniTrade.Controllers.User
 
                     // 更新订单状态
                     var updateResult = await db.Updateable<ORDERS>()
-                        .SetColumns(o => o.STATE == "ysh")  // 设置更新状态
+                        .SetColumns(o => o.STATE == "Rec")  // 设置更新状态
                         .Where(o => o.ORDER_ID == order_id)  // 更新条件
                         .ExecuteCommandAsync();
 
