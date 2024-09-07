@@ -31,7 +31,7 @@ namespace UniTrade.Controllers.Merchandise
                 .SingleAsync();
 
             if (comment == null)
-                return null;
+                return NotFound();
 
             IEnumerable<string> pic = await db.Queryable<COMMENTS_PICTURE>()
                 .Where(c => c.COMMENT_ID == commentId)
@@ -39,7 +39,7 @@ namespace UniTrade.Controllers.Merchandise
                 .ToListAsync();
 
             if (pic == null)
-                return null;
+                return NotFound();
 
             // Step 2: Query the order ID from the COMMENT_ON relation
             var orderId = await db.Queryable<COMMENT_ON>()
@@ -48,7 +48,7 @@ namespace UniTrade.Controllers.Merchandise
                 .SingleAsync();
 
             if (orderId == null)
-                return null;
+                return NotFound();
 
             // Step 3: Query the user ID from the PLACES relation
             var userId = await db.Queryable<PLACES>()
@@ -57,7 +57,7 @@ namespace UniTrade.Controllers.Merchandise
                 .SingleAsync();
 
             if (userId == null)
-                return null;
+                return NotFound();
 
             // Step 4: Query the user details from the USERS table
             var user = await db.Queryable<USERS>()
@@ -70,8 +70,36 @@ namespace UniTrade.Controllers.Merchandise
                 .SingleAsync();
 
             if (user == null)
-                return null;
+                return NotFound("userNotFound");
 
+            var comment_scores = await db.Queryable<SCORES>()
+                .Where(bg => bg.COMMENT_ID == commentId)
+                .Select(bg => new
+                {
+                    bg.QUALITY,
+                    bg.ATTITUDE,
+                    bg.PRICE,
+                    bg.LOGISTIC_SPEED,
+                    bg.CONFORMITY
+                })
+                .SingleAsync();
+
+            if (comment_scores == null)
+            {
+                return Ok(new CommentInfo
+                {
+                    content = comment.CONTENT,
+                    time = comment.COMMENT_TIME,
+                    pictures = pic,
+                    user_avatar = user.AVATAR,
+                    user_name = user.NAME,
+                    quality = 6,
+                    attitude = 6,
+                    price = 6,
+                    logistic_speed = 6,
+                    conformity = 6
+                });
+            }
             // Return the combined comment details and user details
 
             return Ok(new CommentInfo
@@ -80,7 +108,12 @@ namespace UniTrade.Controllers.Merchandise
                 time = comment.COMMENT_TIME,
                 pictures = pic,
                 user_avatar = user.AVATAR,
-                user_name = user.NAME
+                user_name = user.NAME,
+                quality=comment_scores.QUALITY,
+                attitude = comment_scores.ATTITUDE,
+                price = comment_scores.PRICE,
+                logistic_speed = comment_scores.LOGISTIC_SPEED,
+                conformity = comment_scores.CONFORMITY
             });
 
 
