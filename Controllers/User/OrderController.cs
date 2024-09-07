@@ -112,7 +112,7 @@ namespace UniTrade.Controllers.User
 
         [Authorize]
         [HttpPost("addComment")]
-        public async Task<ActionResult> AddComment(string order_id,string merchandise_id,string content,string comment_type)
+        public async Task<ActionResult> AddComment(string order_id,string merchandise_id,string content,string comment_type,short quality_rating,short attitude_rating,short price_rating,short logistic_speed_rating,short conformity_rating)
         {
             try
             {
@@ -146,7 +146,22 @@ namespace UniTrade.Controllers.User
                     // 插入关系到 COMMENT_ON 表
                     await db.Insertable(commentOn).ExecuteCommandAsync();
 
-                    return Ok("评论已成功添加！");
+                    // 插入评分到 SCORES 表
+                    var scores = new SCORES
+                    {
+                        COMMENT_ID = comment.COMMENT_ID,  // 评论ID
+                        QUALITY = quality_rating,  // 质量评分（前端传入）
+                        ATTITUDE = attitude_rating,  // 态度评分（前端传入）
+                        PRICE = price_rating,  // 价格评分（前端传入）
+                        LOGISTIC_SPEED = logistic_speed_rating,  // 物流速度评分（前端传入）
+                        CONFORMITY = conformity_rating  // 描述相符评分（前端传入）
+                    };
+
+                    // 插入评分到 SCORES 表
+                    await db.Insertable(scores).ExecuteCommandAsync();
+
+                    return Ok("评论和评分已成功添加！");
+
                 }
             }
             catch (Exception ex)
