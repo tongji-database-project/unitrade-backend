@@ -42,11 +42,11 @@ namespace UniTrade.Models
            public DateTime CART_TIME {get;set;}
 
            /// <summary>
-           /// Desc:
+           /// Desc:用于标记是否被选中处于预支付状态
            /// Default:
            /// Nullable:False
-           /// </summary>      
-           public bool SELECTED { get; set; }
+           /// </summary>           
+           public bool SELECTED {get;set;}
 
     }
 }
