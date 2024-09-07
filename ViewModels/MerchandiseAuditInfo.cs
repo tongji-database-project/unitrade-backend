@@ -15,7 +15,7 @@
     public class MerchandiseCommit
     {
         public string merchandise_id { get; set; }
-        public int point { get; set; }
+        public double point { get; set; }
     }
 
     public class MerchandiseCommitStatistics

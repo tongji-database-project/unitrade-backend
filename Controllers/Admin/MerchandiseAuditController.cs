@@ -26,7 +26,7 @@ namespace UniTrade.Controllers.Admin
                     .Select((c, s) => new MerchandiseCommit
                     {
                         merchandise_id = c.MERCHANDISE_ID,
-                        point = (s.QUALITY ? 1 : 0) + (s.ATTITUDE ? 1 : 0) + (s.PRICE ? 1 : 0) + (s.LOGISTIC_SPEED ? 1 : 0) + (s.CONFORMITY ? 1 : 0)
+                        point = (s.QUALITY + s.ATTITUDE + s.PRICE + s.LOGISTIC_SPEED + s.CONFORMITY)/5.0d
                     })
                     .ToList();
                 //对评价进行分组，并计算平均值和总数
