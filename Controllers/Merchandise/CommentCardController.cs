@@ -18,7 +18,7 @@ namespace UniTrade.Controllers.Merchandise
         [HttpGet("{commentId}")]
         public async Task<IActionResult> GetCommentDetails(string commentId)
         {
-            /*SqlSugarClient db = Database.GetInstance();
+            SqlSugarClient db = Database.GetInstance();
 
             // Step 1: Query the comment details
             var comment = await db.Queryable<COMMENTS>()
@@ -74,23 +74,23 @@ namespace UniTrade.Controllers.Merchandise
 
             // Return the combined comment details and user details
 
-            return new CommentInfo
+            return Ok(new CommentInfo
             {
                 content = comment.CONTENT,
                 time = comment.COMMENT_TIME,
                 pictures = pic,
                 user_avatar = user.AVATAR,
                 user_name = user.NAME
-            };*/
+            });
 
 
-            return Ok(new CommentInfo
+            /*return Ok(new CommentInfo
             {
                 content = "VS白色的白色台南市",
                 time = DateTime.Now,
                 user_avatar = "avatar.jpg",
                 user_name = "张三",
-            });
+            });*/
         }
     }
 }
